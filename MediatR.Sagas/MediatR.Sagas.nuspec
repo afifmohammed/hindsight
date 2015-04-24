@@ -1,0 +1,28 @@
+﻿<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <title>MediatR.Sagas</title>
+    <projectUrl>http://developer.seek.com.au</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Sagas using the MediatR</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2015</copyright>
+    <tags>MediatR Handlers Messages Events Sagas DDD</tags>
+    <dependencies>
+      <group>
+        <dependency id="MediatR" version="2.0.0-beta"/>
+        <dependency id="MediatR.Extras"/>
+        <dependency id="Newtonsoft.Json" />
+        <dependency id="Autofac" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+		<file src="bin\Release\MediatR.Sagas.dll" target="lib" />
+		<file src="bin\Release\MediatR.Sagas.pdb" target="lib" />
+	</files>
+</package>

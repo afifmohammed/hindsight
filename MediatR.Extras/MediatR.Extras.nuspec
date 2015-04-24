@@ -1,0 +1,27 @@
+﻿<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <title>MediatR.Extras</title>
+    <projectUrl>http://developer.seek.com.au</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Helper classes to tag along with the MediatR</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2015</copyright>
+    <tags>MediatR Handlers Messages Events</tags>
+    <dependencies>
+      <group>
+        <dependency id="MediatR" version="2.0.0-beta"/>
+        <dependency id="Newtonsoft.Json" />
+        <dependency id="Autofac" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+		<file src="bin\Release\MediatR.Extras.dll" target="lib" />
+		<file src="bin\Release\MediatR.Extras.pdb" target="lib" />
+	</files>
+</package>

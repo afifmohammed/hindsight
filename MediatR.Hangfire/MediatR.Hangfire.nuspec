@@ -1,0 +1,30 @@
+﻿<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <title>MediatR.Hangfire</title>
+    <projectUrl>http://developer.seek.com.au</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Enqueueing Handlers using the MediatR</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2015</copyright>
+    <tags>MediatR Handlers Messages Events Sagas DDD Hangfire</tags>
+    <dependencies>
+      <group>
+        <dependency id="MediatR" version="2.0.0-beta"/>
+        <dependency id="MediatR.Extras"/>
+        <dependency id="MediatR.Sagas"/>
+        <dependency id="Newtonsoft.Json" />
+        <dependency id="HangFire.Core" version="1.4.1" />
+        <dependency id="Autofac" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="bin\Release\MediatR.Hangfire.dll" target="lib" />
+    <file src="bin\Release\MediatR.Hangfire.pdb" target="lib" />
+  </files>
+</package>
