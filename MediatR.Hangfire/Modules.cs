@@ -11,7 +11,7 @@ namespace MediatR.Hangfire
                 .InstancePerLifetimeScope()
                 .PropertiesAutowired();
 
-            builder.RegisterGeneric(typeof(ScheduledRequestHandler<>))
+            builder.RegisterGeneric(typeof(ScheduleHangfireJobForPublishing<>))
                 .AsImplementedInterfaces()
                 .InstancePerLifetimeScope()
                 .PropertiesAutowired();

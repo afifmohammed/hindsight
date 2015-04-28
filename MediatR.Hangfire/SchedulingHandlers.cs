@@ -34,7 +34,7 @@ namespace MediatR.Hangfire
         }
     }
 
-    class ScheduledRequestHandler<TNotification> : CanMediate, IRequestHandler<Schedule<TNotification>, Unit>
+    class ScheduleHangfireJobForPublishing<TNotification> : CanMediate, IRequestHandler<Schedule<TNotification>, Unit>
             where TNotification : class, INotification, new()
     {
         public Unit Handle(Schedule<TNotification> message)
