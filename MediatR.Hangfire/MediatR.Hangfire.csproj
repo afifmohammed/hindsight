@@ -60,12 +60,11 @@
   <ItemGroup>
     <Compile Include="AssemblyMarker.cs" />
     <Compile Include="ConfigurationKeys.cs" />
-    <Compile Include="EnqueueingHandlers.cs" />
+    <Compile Include="EnqueuingHandlers.cs" />
     <Compile Include="Modules.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Registrations.cs" />
     <Compile Include="SchedulingHandlers.cs" />
-    <Compile Include="Scoping.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

@@ -138,6 +138,27 @@ namespace MediatR.Extras
             return builder;
         }
 
+        public static ContainerBuilder RegisterScopedEventHandler<TNotification>(this ContainerBuilder builder,
+            Func<IComponentContext, Action<TNotification>> handlerBuilder)
+            where TNotification : INotification
+        {
+            builder.Register(c =>
+            {
+                var handler = handlerBuilder(c);
+                return new NotificationsDelegateWrapper<TNotification>(handler);
+            })
+            .InstancePerLifetimeScope()
+            .PropertiesAutowired()
+            .AsSelf();
+
+            builder.RegisterType<Scoped<NotificationsDelegateWrapper<TNotification>, TNotification>>()
+                .InstancePerLifetimeScope()
+                .PropertiesAutowired()
+                .AsImplementedInterfaces();
+
+            return builder;
+        }
+
         public static ContainerBuilder RegisterEventHandler<TNotification>(this ContainerBuilder builder, 
             Func<IComponentContext, Action<TNotification>> handlerBuilder)
             where TNotification : INotification

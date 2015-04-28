@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using Hangfire;
-using Hangfire.Storage.Monitoring;
 using MediatR.Extras;
 
 namespace MediatR.Hangfire
@@ -12,7 +12,7 @@ namespace MediatR.Hangfire
         public Type Handler { get { return typeof (THandler); } }
     }
 
-    class EnqueueNotificationHandler<THandler, TNotification> : CanMediate, 
+    class EnqueueHangfireJobForEventHandler<THandler, TNotification> : CanMediate, 
         INotificationHandler<TNotification>, 
         IRequestHandler<Enqueue<THandler, TNotification>, Unit> 
             where TNotification : INotification
@@ -20,7 +20,7 @@ namespace MediatR.Hangfire
     {
         private readonly THandler handler;
         
-        public EnqueueNotificationHandler(THandler handler)
+        public EnqueueHangfireJobForEventHandler(THandler handler)
         {
             this.handler = handler;
         }
@@ -51,28 +51,26 @@ namespace MediatR.Hangfire
         public Type Handler { get { return typeof(THandler); } }
     }
 
-    class EnqueueRequestHandler<THandler, TRequest> : CanMediate, 
+    class EnqueueHangfireJobForRequestHandler<THandler, TRequest> : CanMediate, 
         IRequestHandler<TRequest, Unit>,
         IRequestHandler<Enqueue<THandler, TRequest, Unit>, Unit> 
             where TRequest : IRequest<Unit>
             where THandler : IRequestHandler<TRequest, Unit>
     {
         private readonly THandler handler;
-
-        public EnqueueRequestHandler(THandler handler)
+        
+        public EnqueueHangfireJobForRequestHandler(THandler handler)
         {
             this.handler = handler;
         }
 
         public Unit Handle(TRequest request)
         {
-            if (!SendRequest(new Configured<EnqueueHandlers, bool> {Default = true}))
-            {
-                return this.handler.Handle(request);
-            }
-
-            SendRequest(new Enqueue<THandler, TRequest, Unit> {Content = request});
-            return new Unit();
+            var enqueue = SendRequest(new Configured<EnqueueHandlers, bool> {Default = true});
+            
+            return enqueue
+                ? SendRequest(new Enqueue<THandler, TRequest, Unit> {Content = request})
+                : this.handler.Handle(request);
         }
 
         public Unit Handle(Enqueue<THandler, TRequest, Unit> message)

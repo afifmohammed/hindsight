@@ -1,45 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace MediatR.Extras
 {
-    public class Tasks : List<Action> { }
-
-    class QueuedEventsMediator : IMediator
-    {
-        public Tasks Tasks { get; set; }
-        public Mediator Mediator { get; set; }
-
-        public TResponse Send<TResponse>(IRequest<TResponse> request)
-        {
-            return this.Mediator.Send(request);
-        }
-
-        public Task<TResponse> SendAsync<TResponse>(IAsyncRequest<TResponse> request)
-        {
-            return this.Mediator.SendAsync(request);
-        }
-
-        public void Publish(INotification notification)
-        {
-            this.Tasks.Add(() => this.Mediator.Publish(notification));
-        }
-
-        public Task PublishAsync(IAsyncNotification notification)
-        {
-            return new Task(() => this.Tasks.Add(() => this.Mediator.PublishAsync(notification)));
-        }
-    }
-
     public abstract class CanMediate
     {
         private IMediator mediator;
 
-        [Obsolete("Use any of the protected methods instead")]
-        public IMediator InjectedMediator
+        public IMediator Mediator
         {
-            get { return this.mediator; }
             set { this.mediator = value; }
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Autofac;
 using MediatR.Extras;
 using MediatR.Sagas;
@@ -7,11 +8,13 @@ using Xunit;
 
 namespace MediatR.Hangfire
 {
-    public class ClimateChange : INotification
-    { }
-
-    public class SchedulingHandlerTests
+    public class InOrderToDeliverTimeouts
     {
+        class ClimateChange : INotification
+        {
+            public DateTime When { get; set; }
+        }
+
         [Fact]
         public void CanRegisterTimeoutHandlers()
         {
@@ -19,22 +22,21 @@ namespace MediatR.Hangfire
         }
 
         [Fact]
-        public void ShouldReceiveScheduleHandlerRequest()
+        public void ShouldReceiveRequestToScheduleTheHandler()
         {
             var list = new List<Schedule<ClimateChange>>();
 
             new ContainerBuilder()
-                .RegisterQueryHandler<Configured<EnqueueHandlers, bool>, bool>(c => true)
                 .With(x => x.RegisterModule<TimeoutHandlerModule>())
+                .RegisterQueryHandler<Configured<EnqueueHandlers, bool>, bool>(c => true)
                 .RegisterCommandHandler<Schedule<ClimateChange>>(list.Add)
                 .Build()
                 .Send(new Timeout<ClimateChange>
                 {
-                    Interval = TimeSpan.FromSeconds(1), 
-                    Notification = new ClimateChange()
+                    Notification = new ClimateChange { When = new DateTime(2050,1,1)}
                 });
 
-            Assert.True(list.Count == 1);
+            Assert.Equal(1, list.Count(x => x.Notification.When == new DateTime(2050,1,1)));
         }
     }
 

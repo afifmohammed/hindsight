@@ -1,10 +1,9 @@
 ﻿using System;
 using Autofac;
-using MediatR.Extras;
 
-namespace MediatR.Sagas
+namespace MediatR.Extras
 {
-    internal static class ContainerInvocations
+    static class ContainerInvocationsUnderTest
     {
         public static IContainer Build(this ContainerBuilder builder, out ILifetimeScope scope)
         {
@@ -25,8 +24,17 @@ namespace MediatR.Sagas
             var builder = new ContainerBuilder();
             builder.Prepare(container);
 
-            var mediator = container.Resolve<IMediator>();
-            return request(mediator);
+            return r =>
+            {
+                using (container)
+                using (var scope = container.BeginLifetimeScope())
+                using (scope.Resolve<Queue>())
+                {
+                    var mediator = scope.Resolve<IMediator>();
+                    return request(mediator)(r);
+                }
+            };
+
         }
 
         public static void Run(this ILifetimeScope container, params Action<IMediator>[] actions)
@@ -35,16 +43,14 @@ namespace MediatR.Sagas
             builder.Prepare(container);
 
             using (container)
+            using (var scope = container.BeginLifetimeScope())
+            using (scope.Resolve<Queue>())
             {
+                var mediator = scope.Resolve<IMediator>();
+
                 foreach (var action in actions)
                 {
-                    using (var scope = container.BeginLifetimeScope())
-                    {
-                        var mediator = scope.Resolve<IMediator>();
-                        action(mediator);
-                        var tasks = scope.Resolve<Tasks>();
-                        tasks.ForEach(t => t());
-                    }
+                    action(mediator);
                 }
             }
         }
@@ -56,8 +62,10 @@ namespace MediatR.Sagas
             builder.Prepare(container);
 
             using (container)
+            using (var scope = container.BeginLifetimeScope())
+            using (scope.Resolve<Queue>())
             {
-                var mediator = container.Resolve<IMediator>();
+                var mediator = scope.Resolve<IMediator>();
                 mediator.Publish(notification);
             }
         }
@@ -68,16 +76,16 @@ namespace MediatR.Sagas
             builder.Prepare(container);
 
             using (container)
+            using (var scope = container.BeginLifetimeScope())
+            using (scope.Resolve<Queue>())
             {
                 foreach (var command in commands)
                 {
-                    using (var scope = container.BeginLifetimeScope())
-                    {
-                        var mediator = scope.Resolve<IMediator>();
-                        mediator.Send(command);
-                    }
+                    var mediator = scope.Resolve<IMediator>();
+                    mediator.Send(command);
                 }
             }
+
         }
 
         public static TResponse Request<TResponse>(this ILifetimeScope container, IRequest<TResponse> request)
@@ -87,8 +95,10 @@ namespace MediatR.Sagas
             builder.Prepare(container);
 
             using (container)
+            using (var scope = container.BeginLifetimeScope())
+            using (scope.Resolve<Queue>())
             {
-                var mediator = container.Resolve<IMediator>();
+                var mediator = scope.Resolve<IMediator>();
                 return mediator.Send(request);
             }
         }

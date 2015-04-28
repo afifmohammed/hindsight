@@ -20,13 +20,11 @@ namespace MediatR.Hangfire
             var notification = message.Notification ?? new TNotification();
 
             if (SendRequest(new Configured<EnqueueHandlers, bool> {Default = true}))
-            {
-                SendRequest(new Schedule<TNotification>
+                return SendRequest(new Schedule<TNotification>
                 {
                     Interval = message.Interval,
                     Notification = message.Notification
                 });
-            }
 
             Task.Delay(message.Interval);
 
@@ -42,23 +40,8 @@ namespace MediatR.Hangfire
         public Unit Handle(Schedule<TNotification> message)
         {
             var notification = message.Notification ?? new TNotification();
-            BackgroundJob.Schedule<Channel>(x => x.Publish(notification), message.Interval);
+            BackgroundJob.Schedule<Mediator>(x => x.Publish(notification), message.Interval);
             return new Unit();
-        }
-    }
-
-    class Channel
-    {
-        private readonly Action<INotification> publisher;
-
-        public Channel(Action<INotification> publisher)
-        {
-            this.publisher = publisher;
-        }
-
-        public void Publish<TNotification>(TNotification notification) where TNotification : INotification
-        {
-            this.publisher(notification);
         }
     }
 }

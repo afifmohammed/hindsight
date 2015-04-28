@@ -2,8 +2,15 @@
 
 namespace MediatR.Sagas
 {
-    public class Timeout<TNotification> : IRequest where TNotification : INotification
+    public class Timeout<TNotification> : IRequest 
+        where TNotification : class, INotification, new()
     {
+        public Timeout()
+        {
+            Interval = TimeSpan.FromSeconds(5);
+            Notification = new TNotification();
+        }
+
         public TNotification Notification { get; set; }
         public TimeSpan Interval { get; set; }
     }

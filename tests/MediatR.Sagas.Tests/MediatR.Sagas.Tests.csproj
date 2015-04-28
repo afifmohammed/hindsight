@@ -51,8 +51,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ContainerInvocations.cs" />
-    <Compile Include="Tests.cs" />
+    <Compile Include="Saga.cs" />
+    <Compile Include="Tests\SagaRegistrationTests.cs" />
+    <Compile Include="Tests\SagaStateTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

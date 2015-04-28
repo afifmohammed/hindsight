@@ -6,12 +6,6 @@ namespace MediatR.Hangfire
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.Register(c =>
-            {
-                var mediator = c.Resolve<IMediator>();
-                return new Channel(mediator.Publish);
-            }).AsSelf();
-
             builder.RegisterGeneric(typeof (TimeoutRequestHandler<>))
                 .AsImplementedInterfaces()
                 .InstancePerLifetimeScope()

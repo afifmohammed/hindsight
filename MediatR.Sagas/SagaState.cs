@@ -25,4 +25,25 @@ namespace MediatR.Sagas
     {
         public SagaData<TSagaState> Saga { get; set; }
     }
+
+    public static class InRequestStateManager
+    {
+        public static void Upsert<TSaga>(this IDictionary<int, SagaData<TSaga>> dictionary, Upsert<TSaga> command)
+            where TSaga : class, ISagaState, new()
+        {
+            if (dictionary.ContainsKey(command.Content.Id))
+            {
+                dictionary[command.Content.Id] = command.Content;
+                return;
+            }
+            dictionary.Add(command.Content.Id, command.Content);
+        }
+
+        public static SagaData<TSaga> Load<TSaga>(this IDictionary<int, SagaData<TSaga>> dictionary, Load<TSaga> request) where TSaga : class, ISagaState, new()
+        {
+            SagaData<TSaga> saga;
+            dictionary.TryGetValue(request.Content, out saga);
+            return saga;
+        }
+    }
 }

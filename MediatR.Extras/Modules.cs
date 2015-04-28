@@ -23,12 +23,16 @@ namespace MediatR.Extras
 
                 SingleInstanceFactory factory = context.Resolve;
 
-                MultiInstanceFactory multiInstanceFactory = x => (IEnumerable<object>) context.Resolve(typeof(IEnumerable<>).MakeGenericType(x));
-                
-                return new Mediator(factory, multiInstanceFactory);
-            }).AsImplementedInterfaces();
+                MultiInstanceFactory multiInstanceFactory =
+                    x => (IEnumerable<object>) context.Resolve(typeof (IEnumerable<>).MakeGenericType(x));
 
-            builder.RegisterType<Tasks>()
+                return new Mediator(factory, multiInstanceFactory);
+            })
+            .AsImplementedInterfaces()
+            .InstancePerLifetimeScope()
+            .AsSelf();
+
+            builder.RegisterType<Queue>()
                 .AsSelf()
                 .InstancePerLifetimeScope();
         }

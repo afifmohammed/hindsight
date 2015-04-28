@@ -50,10 +50,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ContainerInvocations.cs" />
-    <Compile Include="EnqueuingHandlers.cs" />
+    <Compile Include="EnqueueingSagaTests.cs" />
+    <Compile Include="EnqueuingHandlerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SchedulingHandlers.cs" />
+    <Compile Include="Saga.cs" />
+    <Compile Include="SchedulingHandlerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
