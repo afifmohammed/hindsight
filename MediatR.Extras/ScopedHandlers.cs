@@ -17,7 +17,7 @@ namespace MediatR.Extras
         public TReturn Handle(TRequest message)
         {
             using (var requestScope = scope.BeginLifetimeScope())
-            using (var events = requestScope.Resolve<Queue>())
+            using (var queue = requestScope.Resolve<Queue>())
             {
                 var handler = requestScope.Resolve<THandler>();
                 try
@@ -27,7 +27,7 @@ namespace MediatR.Extras
                 }
                 catch (Exception)
                 {
-                    events.Clear();
+                    queue.Clear();
                     throw;
                 }
             }
@@ -48,7 +48,7 @@ namespace MediatR.Extras
         public void Handle(TNotification notification)
         {
             using (var requestScope = scope.BeginLifetimeScope())
-            using (var events = requestScope.Resolve<Queue>())
+            using (var queue = requestScope.Resolve<Queue>())
             {
                 var handler = requestScope.Resolve<THandler>();
                 try
@@ -57,7 +57,7 @@ namespace MediatR.Extras
                 }
                 catch (Exception)
                 {
-                    events.Clear();
+                    queue.Clear();
                     throw;
                 }
             }
