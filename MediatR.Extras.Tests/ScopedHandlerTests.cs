@@ -1,5 +1,6 @@
 ﻿using System;
 using Autofac;
+using MediatR.Extras.Tests;
 using Xunit;
 
 namespace MediatR.Extras

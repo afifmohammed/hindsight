@@ -12,15 +12,26 @@ namespace MediatR.Hangfire
         public Type Handler { get { return typeof (THandler); } }
     }
 
-    class EnqueueHangfireJobForEventHandler<THandler, TNotification> : CanMediate, 
-        INotificationHandler<TNotification>, 
-        IRequestHandler<Enqueue<THandler, TNotification>, Unit> 
+    class EnqueueHangfireJobForEventHandler<THandler, TNotification> : CanMediate, IRequestHandler<Enqueue<THandler, TNotification>, Unit>
+        where TNotification : INotification
+        where THandler : INotificationHandler<TNotification>
+    {
+        public Unit Handle(Enqueue<THandler, TNotification> message)
+        {
+            var notification = message.Content;
+            BackgroundJob.Enqueue<Scoped<THandler, TNotification>>(x => x.Handle(notification));
+            return new Unit();
+        }
+    }
+
+    class SendEnqueueRequestForEventHandler<THandler, TNotification> : CanMediate, 
+        INotificationHandler<TNotification>
             where TNotification : INotification
             where THandler : INotificationHandler<TNotification>
     {
         private readonly THandler handler;
         
-        public EnqueueHangfireJobForEventHandler(THandler handler)
+        public SendEnqueueRequestForEventHandler(THandler handler)
         {
             this.handler = handler;
         }
@@ -35,13 +46,6 @@ namespace MediatR.Hangfire
 
             SendRequest(new Enqueue<THandler, TNotification> { Content = notification });
         }
-
-        public Unit Handle(Enqueue<THandler, TNotification> message)
-        {
-            var notification = message.Content;
-            BackgroundJob.Enqueue<Scoped<THandler, TNotification>>(x => x.Handle(notification));
-            return new Unit();
-        }
     }
 
     class Enqueue<THandler, TRequest, TReturn> : Request<TRequest, TReturn>
@@ -51,15 +55,14 @@ namespace MediatR.Hangfire
         public Type Handler { get { return typeof(THandler); } }
     }
 
-    class EnqueueHangfireJobForRequestHandler<THandler, TRequest> : CanMediate, 
-        IRequestHandler<TRequest, Unit>,
-        IRequestHandler<Enqueue<THandler, TRequest, Unit>, Unit> 
+    class SendEnqueueRequestForCommandHandler<THandler, TRequest> : CanMediate, 
+        IRequestHandler<TRequest, Unit>
             where TRequest : IRequest<Unit>
             where THandler : IRequestHandler<TRequest, Unit>
     {
         private readonly THandler handler;
         
-        public EnqueueHangfireJobForRequestHandler(THandler handler)
+        public SendEnqueueRequestForCommandHandler(THandler handler)
         {
             this.handler = handler;
         }
@@ -72,7 +75,13 @@ namespace MediatR.Hangfire
                 ? SendRequest(new Enqueue<THandler, TRequest, Unit> {Content = request})
                 : this.handler.Handle(request);
         }
+    }
 
+    class EnqueueHangfireJobForCommandHandler<THandler, TRequest> : CanMediate,
+        IRequestHandler<Enqueue<THandler, TRequest, Unit>, Unit>
+        where TRequest : IRequest<Unit>
+        where THandler : IRequestHandler<TRequest, Unit>
+    {
         public Unit Handle(Enqueue<THandler, TRequest, Unit> message)
         {
             var request = message.Content;
@@ -80,4 +89,5 @@ namespace MediatR.Hangfire
             return new Unit();
         }
     }
+
 }

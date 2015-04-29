@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Autofac;
 using MediatR.Extras;
+using MediatR.Extras.Tests;
 using Xunit;
 
 namespace MediatR.Hangfire
