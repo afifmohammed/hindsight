@@ -13,7 +13,7 @@ namespace MediatR.Extras
         public QueryHandler(IRequestHandler<TRequest, TResponse> inner)
         {
             _inner = inner;
-            _log = LogProvider.GetLogger(inner.GetType());
+            _log = LogProvider.GetLogger(inner.GetType().CSharpName());
         }
 
         public TResponse Handle(TRequest message)
