@@ -36,6 +36,7 @@ namespace MediatR.Sagas
 
             if (this.innerHandler.Saga.MarkedAsComplete)
             {
+                this.innerHandler.Handle(notification);
                 Publish(new SagaOver<TNotification> { Content = notification });
                 return;
             }
