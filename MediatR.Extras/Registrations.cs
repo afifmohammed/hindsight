@@ -1,27 +1,17 @@
 ﻿using System;
 using Autofac;
+using Autofac.Builder;
 
 namespace MediatR.Extras
 {
-    public static class Registrations
+    public static class QueryRegistrations
     {
         public static ContainerBuilder RegisterQueryHandler<THandler, TRequest, TReturn>(this ContainerBuilder builder)
-            where THandler : IRequestHandler<TRequest, TReturn> 
+            where THandler : IRequestHandler<TRequest, TReturn>
             where TRequest : IRequest<TReturn>
         {
-            builder.RegisterType<THandler>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsSelf();
-
-            builder.Register(c =>
-            {
-                var handler = c.Resolve<THandler>();
-                return new QueryHandler<TRequest, TReturn>(handler);
-            })
-            .InstancePerLifetimeScope()
-            .PropertiesAutowired()
-            .AsImplementedInterfaces();
+            builder.RegisterQueryHandler<THandler, TRequest, TReturn>(
+                x => x.RegisterType<THandler>());
 
             return builder;
         }
@@ -31,19 +21,8 @@ namespace MediatR.Extras
             where THandler : IRequestHandler<TRequest, TReturn>
             where TRequest : IRequest<TReturn>
         {
-            builder.Register(handlerBuilder)
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsSelf();
-
-            builder.Register(c =>
-            {
-                var handler = c.Resolve<THandler>();
-                return new QueryHandler<TRequest, TReturn>(handler);
-            })
-            .InstancePerLifetimeScope()
-            .PropertiesAutowired()
-            .AsImplementedInterfaces();
+            builder.RegisterQueryHandler<THandler, TRequest, TReturn>(
+                x => x.Register(handlerBuilder));
 
             return builder;
         }
@@ -51,10 +30,8 @@ namespace MediatR.Extras
         public static ContainerBuilder RegisterQueryHandler<TRequest, TReturn>(this ContainerBuilder builder, Func<TRequest, TReturn> handler)
             where TRequest : IRequest<TReturn>
         {
-            builder.Register(c => new QueryHandler<TRequest, TReturn>(new RequestDelegateWrapper<TRequest, TReturn>(handler)))
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsImplementedInterfaces();
+            builder.RegisterQueryHandler<RequestDelegateWrapper<TRequest, TReturn>, TRequest, TReturn>(
+                x => x.Register(c => new RequestDelegateWrapper<TRequest, TReturn>(handler)));
 
             return builder;
         }
@@ -63,41 +40,58 @@ namespace MediatR.Extras
             Func<IComponentContext, Func<TRequest, TReturn>> handlerBuilder)
             where TRequest : IRequest<TReturn>
         {
-            builder.Register(c =>
-            {
-                var handler = handlerBuilder(c);
-                return new QueryHandler<TRequest, TReturn>(new RequestDelegateWrapper<TRequest, TReturn>(handler));
-            })
-            .InstancePerLifetimeScope()
-            .PropertiesAutowired()
-            .AsImplementedInterfaces();
+            builder.RegisterQueryHandler<RequestDelegateWrapper<TRequest, TReturn>, TRequest, TReturn>(
+                x => x.Register(c =>
+                {
+                    var handler = handlerBuilder(c);
+                    return new RequestDelegateWrapper<TRequest, TReturn>(handler);
+                }));
 
             return builder;
         }
 
+        static void RegisterQueryHandler<THandler, TRequest, TReturn>(
+            this ContainerBuilder builder, Func<ContainerBuilder, IRegistrationBuilder<THandler, IConcreteActivatorData, SingleRegistrationStyle>> registration)
+            where THandler : IRequestHandler<TRequest, TReturn>
+            where TRequest : IRequest<TReturn>
+        {
+            registration(builder)
+                .InstancePerLifetimeScope()
+                .PropertiesAutowired()
+                .Named<THandler>("inner");
+
+            builder.Register(c =>
+            {
+                var handler = c.ResolveNamed<THandler>("inner");
+                return new QueryHandler<TRequest, TReturn>(handler);
+            })
+            .InstancePerLifetimeScope()
+            .PropertiesAutowired()
+            .AsImplementedInterfaces();
+        }
+    }
+
+    public static class CommandRegistrations
+    {
         public static ContainerBuilder RegisterCommandHandler<TRequest>(this ContainerBuilder builder, Action<TRequest> handler)
             where TRequest : IRequest<Unit>
         {
-            builder.Register(c => new RequestDelegateWrapper<TRequest>(handler))
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsImplementedInterfaces();
+            builder.RegisterCommandHandler<RequestDelegateWrapper<TRequest>, TRequest>(
+                x => x.Register(c => new RequestDelegateWrapper<TRequest>(handler)));
 
             return builder;
         }
 
-        public static ContainerBuilder RegisterCommandHandler<TRequest>(this ContainerBuilder builder, 
+        public static ContainerBuilder RegisterCommandHandler<TRequest>(this ContainerBuilder builder,
             Func<IComponentContext, Action<TRequest>> handlerBuilder)
             where TRequest : IRequest<Unit>
         {
-            builder.Register(c =>
-            {
-                var handler = handlerBuilder(c);
-                return new RequestDelegateWrapper<TRequest>(handler);
-            })
-            .InstancePerLifetimeScope()
-            .PropertiesAutowired()
-            .AsImplementedInterfaces();
+            builder.RegisterCommandHandler<RequestDelegateWrapper<TRequest>, TRequest>(
+                x => x.Register(c =>
+                {
+                    var handler = handlerBuilder(c);
+                    return new RequestDelegateWrapper<TRequest>(handler);
+                }));
 
             return builder;
         }
@@ -106,10 +100,8 @@ namespace MediatR.Extras
             where TRequest : IRequest<Unit>
             where THandler : IRequestHandler<TRequest, Unit>
         {
-            builder.RegisterType<THandler>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsImplementedInterfaces();
+            builder.RegisterCommandHandler<THandler, TRequest>(
+                x => x.RegisterType<THandler>());
 
             return builder;
         }
@@ -119,42 +111,42 @@ namespace MediatR.Extras
             where TRequest : IRequest<Unit>
             where THandler : IRequestHandler<TRequest, Unit>
         {
-            builder.Register(handlerBuilder)
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsImplementedInterfaces();
+            builder.RegisterCommandHandler<THandler, TRequest>(
+                x => x.Register(handlerBuilder));
 
             return builder;
         }
 
-        public static ContainerBuilder RegisterEventHandler<TNotification>(this ContainerBuilder builder, Action<TNotification> handler)
-            where TNotification : INotification
+        static void RegisterCommandHandler<THandler, TRequest>(this ContainerBuilder builder,
+            Func<ContainerBuilder, IRegistrationBuilder<THandler, IConcreteActivatorData, SingleRegistrationStyle>> registration)
+            where THandler : IRequestHandler<TRequest, Unit>
+            where TRequest : IRequest<Unit>
         {
-            builder.Register(c => new NotificationsDelegateWrapper<TNotification>(handler))
+            registration(builder)
                 .InstancePerLifetimeScope()
                 .PropertiesAutowired()
-                .AsImplementedInterfaces();
+                .Named<THandler>("inner");
 
-            return builder;
-        }
-
-        public static ContainerBuilder RegisterScopedEventHandler<TNotification>(this ContainerBuilder builder,
-            Func<IComponentContext, Action<TNotification>> handlerBuilder)
-            where TNotification : INotification
-        {
             builder.Register(c =>
             {
-                var handler = handlerBuilder(c);
-                return new NotificationsDelegateWrapper<TNotification>(handler);
+                IRequestHandler<TRequest, Unit> handler = c.ResolveNamed<THandler>("inner");
+                return handler.GetType() == typeof(ExceptionLoggingHandler<TRequest, Unit>)
+                        ? handler as ExceptionLoggingHandler<TRequest, Unit>
+                        : new ExceptionLoggingHandler<TRequest, Unit>(handler);
             })
             .InstancePerLifetimeScope()
             .PropertiesAutowired()
-            .AsSelf();
+            .AsImplementedInterfaces();
+        }
+    }
 
-            builder.RegisterType<Scoped<NotificationsDelegateWrapper<TNotification>, TNotification>>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsImplementedInterfaces();
+    public static class NotificationRegistrations
+    {
+        public static ContainerBuilder RegisterEventHandler<TNotification>(this ContainerBuilder builder, Action<TNotification> handler)
+            where TNotification : INotification
+        {
+            builder.RegisterNotificationHandler<NotificationsDelegateWrapper<TNotification>, TNotification>(
+                x => x.Register(c => new NotificationsDelegateWrapper<TNotification>(handler)));
 
             return builder;
         }
@@ -163,14 +155,12 @@ namespace MediatR.Extras
             Func<IComponentContext, Action<TNotification>> handlerBuilder)
             where TNotification : INotification
         {
-            builder.Register(c =>
-            {
-                var handler = handlerBuilder(c);
-                return new NotificationsDelegateWrapper<TNotification>(handler);
-            })
-            .InstancePerLifetimeScope()
-            .PropertiesAutowired()
-            .AsImplementedInterfaces();
+            builder.RegisterNotificationHandler<NotificationsDelegateWrapper<TNotification>, TNotification>(
+                x => x.Register(c =>
+                {
+                    var handler = handlerBuilder(c);
+                    return new NotificationsDelegateWrapper<TNotification>(handler);
+                }));
 
             return builder;
         }
@@ -179,10 +169,8 @@ namespace MediatR.Extras
             where TNotification : INotification
             where THandler : INotificationHandler<TNotification>
         {
-            builder.RegisterType<THandler>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsImplementedInterfaces();
+            builder.RegisterNotificationHandler<THandler, TNotification>(
+                x => x.RegisterType<THandler>());
 
             return builder;
         }
@@ -192,12 +180,33 @@ namespace MediatR.Extras
             where TNotification : INotification
             where THandler : INotificationHandler<TNotification>
         {
-            builder.Register(handlerBuilder)
+            builder.RegisterNotificationHandler<THandler, TNotification>(
+                x => x.Register(handlerBuilder));
+
+            return builder;
+        }
+
+        static void RegisterNotificationHandler<THandler, TNotification>(this ContainerBuilder builder,
+            Func<ContainerBuilder, IRegistrationBuilder<THandler, IConcreteActivatorData, SingleRegistrationStyle>> registration)
+            where THandler : INotificationHandler<TNotification> 
+            where TNotification : INotification
+        {
+            registration(builder)
+                .InstancePerLifetimeScope()
+                .PropertiesAutowired()
+                .Named<THandler>("inner");
+
+            builder
+                .Register(c =>
+                {
+                    INotificationHandler<TNotification> handler = c.ResolveNamed<THandler>("inner");
+                    return handler.GetType() == typeof(ExceptionLoggingHandler<TNotification>)
+                        ? handler as ExceptionLoggingHandler<TNotification>
+                        : new ExceptionLoggingHandler<TNotification>(handler);
+                })
                 .InstancePerLifetimeScope()
                 .PropertiesAutowired()
                 .AsImplementedInterfaces();
-            
-            return builder;
         }
     }
 }

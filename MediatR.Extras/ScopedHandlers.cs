@@ -1,5 +1,6 @@
 ﻿using System;
 using Autofac;
+using MediatR.Extras.Logging;
 
 namespace MediatR.Extras
 {
@@ -19,14 +20,20 @@ namespace MediatR.Extras
             using (var requestScope = scope.BeginLifetimeScope())
             using (var queue = requestScope.Resolve<Queue>())
             {
-                var handler = requestScope.Resolve<THandler>();
+                IRequestHandler<TRequest, TReturn> handler = requestScope.ResolveNamed<THandler>("inner");
+                handler = handler is ExceptionLoggingHandler<TRequest, TReturn>
+                    ? handler
+                    : new ExceptionLoggingHandler<TRequest, TReturn>(handler);
+
+                var logger = LogProvider.GetLogger(handler.ToString());
                 try
                 {
                     var result = handler.Handle(message);
                     return result;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    logger.LogError(message, ex);
                     queue.Clear();
                     throw;
                 }
@@ -50,7 +57,10 @@ namespace MediatR.Extras
             using (var requestScope = scope.BeginLifetimeScope())
             using (var queue = requestScope.Resolve<Queue>())
             {
-                var handler = requestScope.Resolve<THandler>();
+                INotificationHandler<TNotification> handler = requestScope.ResolveNamed<THandler>("inner");
+                handler = handler is ExceptionLoggingHandler<TNotification>
+                    ? handler
+                    : new ExceptionLoggingHandler<TNotification>(handler);
                 try
                 {
                     handler.Handle(notification);

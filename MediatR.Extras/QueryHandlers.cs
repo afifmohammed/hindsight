@@ -12,7 +12,10 @@ namespace MediatR.Extras
 
         public QueryHandler(IRequestHandler<TRequest, TResponse> inner)
         {
-            _inner = inner;
+            _inner = inner is ExceptionLoggingHandler<TRequest, TResponse> 
+                ? inner 
+                : new ExceptionLoggingHandler<TRequest, TResponse>(inner);
+
             _log = LogProvider.GetLogger(inner.GetType().CSharpName());
         }
 
@@ -24,8 +27,8 @@ namespace MediatR.Extras
             if (_responses.TryGetValue(key, out response))
             {
                 var correlated = message as ICorrelated;
-                if (correlated != null) _log.Log(LogLevel.Info, () => "{Message} with {CorrelationId} for {@Content} returns cached response", null, correlated, correlated.CorrelationId, key);
-                if (correlated == null) _log.Log(LogLevel.Info, () => "{Message} for {@Content} returns cached response", null, message, key);
+                if (correlated != null) _log.Log(LogLevel.Info, () => "{Message} with {CorrelationId} for {@Content} returns cached response", null, correlated.GetType().CSharpName(), correlated.CorrelationId, key);
+                if (correlated == null) _log.Log(LogLevel.Info, () => "{Message} for {@Content} returns cached response", null, message.GetType().CSharpName(), key);
 
                 return response;
             }

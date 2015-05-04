@@ -16,32 +16,9 @@ namespace MediatR.Hangfire
             builder.RegisterType<THandler>()
                 .InstancePerLifetimeScope()
                 .PropertiesAutowired()
-                .AsSelf();
+                .Named<THandler>("inner");
 
-            builder.RegisterType<Scoped<THandler, TNotification>>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsSelf();
-
-            builder.RegisterType<SendEnqueueRequestForEventHandler<THandler, TNotification>>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsSelf();
-
-            builder.Register(c =>
-            {
-                var handler = c.Resolve<SendEnqueueRequestForEventHandler<THandler, TNotification>>();
-                var queue = c.Resolve<Queue>();
-                return new EnqueueEventHandler<TNotification>(handler, queue);
-            })
-            .InstancePerLifetimeScope()
-            .PropertiesAutowired()
-            .AsImplementedInterfaces();
-
-            builder.RegisterType<EnqueueHangfireJobForEventHandler<THandler, TNotification>>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsImplementedInterfaces();
+            builder.RegisterEnqueuedInnerNotificationHandler<THandler, TNotification>();
 
             return builder;
         }
@@ -54,33 +31,17 @@ namespace MediatR.Hangfire
             builder.Register(handlerBuilder)
                 .InstancePerLifetimeScope()
                 .PropertiesAutowired()
-                .AsSelf();
+                .Named<THandler>("inner");
 
-            builder.RegisterType<Scoped<THandler, TNotification>>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsSelf();
+            builder.RegisterEnqueuedInnerNotificationHandler<THandler, TNotification>();
 
-            builder.RegisterType<SendEnqueueRequestForEventHandler<THandler, TNotification>>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsSelf();
+            return builder;
+        }
 
-            builder.Register(c =>
-            {
-                var handler = c.Resolve<SendEnqueueRequestForEventHandler<THandler, TNotification>>();
-                var queue = c.Resolve<Queue>();
-                return new EnqueueEventHandler<TNotification>(handler, queue);
-            })
-            .InstancePerLifetimeScope()
-            .PropertiesAutowired()
-            .AsImplementedInterfaces();
-
-            builder.RegisterType<EnqueueHangfireJobForEventHandler<THandler, TNotification>>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsImplementedInterfaces();
-
+        public static ContainerBuilder RegisterEnqueuedCommandHandler<TRequest>(this ContainerBuilder builder, Action<TRequest> handler)
+            where TRequest : IRequest<Unit>
+        {
+            builder.RegisterEnqueuedCommandHandler(c => handler);
             return builder;
         }
 
@@ -91,32 +52,9 @@ namespace MediatR.Hangfire
             builder.RegisterType<THandler>()
                 .InstancePerLifetimeScope()
                 .PropertiesAutowired()
-                .AsSelf();
+                .Named<THandler>("inner");
 
-            builder.RegisterType<Scoped<THandler, TRequest, Unit>>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsSelf();
-
-            builder.RegisterType<SendEnqueueRequestForCommandHandler<THandler, TRequest>>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsSelf();
-
-            builder.Register(c =>
-            {
-                var handler = c.Resolve<SendEnqueueRequestForCommandHandler<THandler, TRequest>>();
-                var queue = c.Resolve<Queue>();
-                return new EnqueueRequestHandler<TRequest>(handler, queue);
-            })
-            .InstancePerLifetimeScope()
-            .PropertiesAutowired()
-            .AsImplementedInterfaces();
-
-            builder.RegisterType<EnqueueHangfireJobForCommandHandler<THandler, TRequest>>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsImplementedInterfaces();
+            builder.RegisterEnqueuedInnerRequestHandler<THandler, TRequest>();
 
             return builder;
         }
@@ -129,40 +67,10 @@ namespace MediatR.Hangfire
             builder.Register(handlerBuilder)
                 .InstancePerLifetimeScope()
                 .PropertiesAutowired()
-                .AsSelf();
+                .Named<THandler>("inner");
 
-            builder.RegisterType<Scoped<THandler, TRequest, Unit>>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsSelf();
+            builder.RegisterEnqueuedInnerRequestHandler<THandler, TRequest>();
 
-            builder.RegisterType<SendEnqueueRequestForCommandHandler<THandler, TRequest>>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsSelf();
-
-            builder.Register(c =>
-            {
-                var handler = c.Resolve<SendEnqueueRequestForCommandHandler<THandler, TRequest>>();
-                var queue = c.Resolve<Queue>();
-                return new EnqueueRequestHandler<TRequest>(handler, queue);
-            })
-            .InstancePerLifetimeScope()
-            .PropertiesAutowired()
-            .AsImplementedInterfaces();
-
-            builder.RegisterType<EnqueueHangfireJobForCommandHandler<THandler, TRequest>>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsImplementedInterfaces();
-
-            return builder;
-        }
-
-        public static ContainerBuilder RegisterEnqueuedCommandHandler<TRequest>(this ContainerBuilder builder, Action<TRequest> handler)
-            where TRequest : IRequest<Unit>
-        {
-            builder.RegisterEnqueuedCommandHandler(c => handler);
             return builder;
         }
 
@@ -177,32 +85,9 @@ namespace MediatR.Hangfire
             })
             .InstancePerLifetimeScope()
             .PropertiesAutowired()
-            .AsSelf();
+            .Named<RequestDelegateWrapper<TRequest>>("inner");
 
-            builder.RegisterType<Scoped<RequestDelegateWrapper<TRequest>, TRequest, Unit>>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsSelf();
-
-            builder.RegisterType<SendEnqueueRequestForCommandHandler<RequestDelegateWrapper<TRequest>, TRequest>>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsSelf();
-
-            builder.Register(c =>
-            {
-                var handler = c.Resolve<SendEnqueueRequestForCommandHandler<RequestDelegateWrapper<TRequest>, TRequest>>();
-                var queue = c.Resolve<Queue>();
-                return new EnqueueRequestHandler<TRequest>(handler, queue);
-            })
-            .InstancePerLifetimeScope()
-            .PropertiesAutowired()
-            .AsImplementedInterfaces();
-
-            builder.RegisterType<EnqueueHangfireJobForCommandHandler<RequestDelegateWrapper<TRequest>, TRequest>>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsImplementedInterfaces();
+            builder.RegisterEnqueuedInnerRequestHandler<RequestDelegateWrapper<TRequest>, TRequest>();
 
             return builder;
         }
@@ -212,9 +97,9 @@ namespace MediatR.Hangfire
             where TSagaHandler : SagaOf<TSagaState>
         {
             container.RegisterType<TSagaHandler>()
-                .AsSelf()
                 .InstancePerLifetimeScope()
-                .PropertiesAutowired();
+                .PropertiesAutowired()
+                .Named<TSagaHandler>("inner");
 
             var contracts = typeof(TSagaHandler).GetInterfaces()
                     .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(INotificationHandler<>));
@@ -239,41 +124,96 @@ namespace MediatR.Hangfire
             where TNotification : INotification
         {
             container
-                .RegisterType<SagaNotificationHandler<TNotification, TSagaHandler, TSagaState>>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsSelf();
-
-            container
-                .RegisterType<Scoped<SagaNotificationHandler<TNotification, TSagaHandler, TSagaState>, TNotification>>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsSelf();
-
-            container
-                .RegisterType<SendEnqueueRequestForEventHandler<SagaNotificationHandler<TNotification, TSagaHandler, TSagaState>, TNotification>>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsSelf();
-
-            container
                 .Register(c =>
                 {
-                    var handler = c.Resolve<SendEnqueueRequestForEventHandler<SagaNotificationHandler<TNotification, TSagaHandler, TSagaState>, TNotification>>();
+                    var handler = c.ResolveNamed<TSagaHandler>("inner");
+                    return new SagaNotificationHandler<TNotification, TSagaHandler, TSagaState>(handler);
+                })
+                .InstancePerLifetimeScope()
+                .PropertiesAutowired()
+                .Named<SagaNotificationHandler<TNotification, TSagaHandler, TSagaState>>("inner");
+
+            container.RegisterEnqueuedInnerNotificationHandler<SagaNotificationHandler<TNotification, TSagaHandler, TSagaState>, TNotification>();
+
+            return container;
+        }
+
+        static ContainerBuilder RegisterEnqueuedInnerNotificationHandler<THandler, TNotification>(this ContainerBuilder builder)
+            where TNotification : INotification
+            where THandler : INotificationHandler<TNotification>
+        {
+            builder.RegisterType<Scoped<THandler, TNotification>>()
+                .InstancePerLifetimeScope()
+                .PropertiesAutowired()
+                .AsSelf();
+
+            builder
+                .Register(c =>
+                {
+                    var handler = c.ResolveNamed<THandler>("inner");
+                    return new SendEnqueueRequestForEventHandler<THandler, TNotification>(handler);
+                })
+                .InstancePerLifetimeScope()
+                .PropertiesAutowired()
+                .Named<SendEnqueueRequestForEventHandler<THandler, TNotification>>("inner");
+
+            builder.Register(c =>
+            {
+                var handler = c.ResolveNamed<SendEnqueueRequestForEventHandler<THandler, TNotification>>("inner");
+                var queue = c.Resolve<Queue>();
+                return new EnqueueEventHandler<TNotification>(handler, queue);
+            })
+            .InstancePerLifetimeScope()
+            .PropertiesAutowired()
+            .AsImplementedInterfaces();
+
+            builder.RegisterType<EnqueueHangfireJobForEventHandler<THandler, TNotification>>()
+                .InstancePerLifetimeScope()
+                .PropertiesAutowired()
+                .AsImplementedInterfaces();
+
+            return builder;
+        }
+
+        static ContainerBuilder RegisterEnqueuedInnerRequestHandler<THandler, TRequest>(this ContainerBuilder builder)
+            where TRequest : IRequest<Unit>
+            where THandler : IRequestHandler<TRequest, Unit>
+        {
+            builder
+                .RegisterType<Scoped<THandler, TRequest, Unit>>()
+                .InstancePerLifetimeScope()
+                .PropertiesAutowired()
+                .AsSelf();
+
+            builder
+                .Register(c =>
+                {
+                    var handler = c.ResolveNamed<THandler>("inner");
+                    return new SendEnqueueRequestForCommandHandler<THandler, TRequest>(handler);
+                })
+                .InstancePerLifetimeScope()
+                .PropertiesAutowired()
+                .Named<SendEnqueueRequestForCommandHandler<THandler, TRequest>>("inner");
+
+            builder
+                .Register(c =>
+                {
+                    var handler = c.ResolveNamed<SendEnqueueRequestForCommandHandler<THandler, TRequest>>("inner");
                     var queue = c.Resolve<Queue>();
-                    return new EnqueueEventHandler<TNotification>(handler, queue);
+                    return new EnqueueRequestHandler<TRequest>(handler, queue);
                 })
                 .InstancePerLifetimeScope()
                 .PropertiesAutowired()
                 .AsImplementedInterfaces();
 
-            container
-                .RegisterType<EnqueueHangfireJobForEventHandler<SagaNotificationHandler<TNotification, TSagaHandler, TSagaState>, TNotification>>()
+            builder
+                .RegisterType<EnqueueHangfireJobForCommandHandler<THandler, TRequest>>()
                 .InstancePerLifetimeScope()
                 .PropertiesAutowired()
                 .AsImplementedInterfaces();
 
-            return container;
+            return builder;
         }
+
     }
 }

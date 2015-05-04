@@ -51,9 +51,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Registration\NotificationHandlerRegoTests.cs" />
+    <Compile Include="Registration\QueryHandlerRegoTests.cs" />
     <Compile Include="ConfigurationTests.cs" />
-    <Compile Include="Events.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Registration\CommandHandlerRegoTests.cs" />
     <Compile Include="ScopedHandlerTests.cs" />
   </ItemGroup>
   <ItemGroup>

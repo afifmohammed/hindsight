@@ -11,7 +11,10 @@ namespace MediatR.Extras
 
         public EnqueueRequestHandler(IRequestHandler<TRequest, Unit> handler, Queue<Action> queue)
         {
-            this.handler = handler;
+            this.handler = handler is ExceptionLoggingHandler<TRequest, Unit> 
+                ? handler 
+                : new ExceptionLoggingHandler<TRequest, Unit>(handler);
+
             this.queue = queue;
         }
 
@@ -29,7 +32,10 @@ namespace MediatR.Extras
 
         public EnqueueEventHandler(INotificationHandler<TNotification> handler, Queue<Action> queue)
         {
-            this.handler = handler;
+            this.handler = handler is ExceptionLoggingHandler<TNotification>
+                ? handler
+                : new ExceptionLoggingHandler<TNotification>(handler);
+
             this.queue = queue;
         }
 

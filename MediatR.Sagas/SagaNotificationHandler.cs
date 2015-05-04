@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using MediatR.Extras;
 using MediatR.Sagas.Logging;
@@ -10,7 +11,7 @@ namespace MediatR.Sagas
         where TSagaState : class, ISagaState, new()
     {
         private readonly TSagaHandler innerHandler;
-        private readonly ILog innerHandlerLogger = LogProvider.For<TSagaHandler>();
+        private readonly ILog innerHandlerLogger = LogProvider.GetLogger(typeof(TSagaHandler).CSharpName());
 
         public SagaNotificationHandler(TSagaHandler innerHandler)
         {
@@ -36,7 +37,7 @@ namespace MediatR.Sagas
 
             if (this.innerHandler.Saga.MarkedAsComplete)
             {
-                this.innerHandler.Handle(notification);
+                ErrorLoggingHandle(notification)(this.innerHandler);
                 Publish(new SagaOver<TNotification> { Content = notification });
                 return;
             }
@@ -44,7 +45,7 @@ namespace MediatR.Sagas
             bool mapped;
             this.innerHandler.MapMessageContent(notification, out mapped);
             if ((mapped && this.innerHandler.Saga.IsPending) == false)
-                this.innerHandler.Handle(notification);
+                ErrorLoggingHandle(notification)(this.innerHandler);
 
             var voilation = this.innerHandler.Saga.State.Invariants().FirstOrDefault(invariant => !invariant.Value());
             if (!string.IsNullOrEmpty(voilation.Key))
@@ -60,6 +61,18 @@ namespace MediatR.Sagas
                     this.innerHandler.Saga.Id);
 
             SendCommand(new Upsert<TSagaState> { Content = this.innerHandler.Saga });
+        }
+
+        private static Action<INotificationHandler<TNotification>> ErrorLoggingHandle(TNotification notification)
+        {
+            return inner =>
+            {
+                var handler = inner is ExceptionLoggingHandler<TNotification>
+                ? inner
+                : new ExceptionLoggingHandler<TNotification>(inner);
+
+                handler.Handle(notification);
+            };
         }
 
         public override string ToString()

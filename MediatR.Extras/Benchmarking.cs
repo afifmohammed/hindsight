@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Dynamic;
-using System.Linq;
 using MediatR.Extras.Logging;
-using Newtonsoft.Json;
 
 namespace MediatR.Extras
 {
@@ -42,7 +37,7 @@ namespace MediatR.Extras
                 this.handler,
                 this.input != null ? this.input.GetType().CSharpName() : null,
                 this.input != null ? ((ICorrelated)this.input).CorrelationId : null,
-                this.input != null ? this.input.ToString() : null);
+                this.input);
         }
 
         private void LogMessage()
@@ -51,42 +46,7 @@ namespace MediatR.Extras
                 this.watch.Elapsed.TotalMilliseconds,
                 this.handler,
                 this.input != null ? this.input.GetType().CSharpName() : null,
-                this.input != null ? this.input.ToString() : null);
-        }
-
-        class Message
-        {
-            private readonly object value;
-
-            public Message(object value)
-            {
-                this.value = value;
-            }
-
-            public override string ToString()
-            {
-                var kvps = ToExpando(this.value);
-
-                var message = JsonConvert.SerializeObject(kvps);
-
-                return message;
-            }
-
-            private static object ToExpando(object value)
-            {
-                IDictionary<string, object> ids = new ExpandoObject();
-                IDictionary<string, object> all = new ExpandoObject();
-
-                foreach (PropertyDescriptor property in TypeDescriptor.GetProperties(value.GetType()))
-                {
-                    all.Add(property.Name, property.GetValue(value));
-                    if (property.Name.ToLower().EndsWith("id"))
-                        ids.Add(property.Name, property.GetValue(value));
-                }
-
-                var kvps = ids.Any() ? ids : all;
-                return (kvps.Count == 1 ? kvps.First().Value : kvps);
-            }
+                this.input);
         }
     }
 }

@@ -52,8 +52,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Saga.cs" />
-    <Compile Include="Tests\SagaRegistrationTests.cs" />
-    <Compile Include="Tests\SagaStateTests.cs" />
+    <Compile Include="SagaRegistrationTests.cs" />
+    <Compile Include="SagaStateTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

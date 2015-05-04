@@ -131,7 +131,7 @@ namespace MediatR.Extras
     class LookupConnectionStringFor<TKey> : IRequestHandler<ConnectionString<TKey>, string>
     {
         private readonly ConnectionStringProvider provider;
-        private static readonly ILog Log = LogProvider.For<LookupConnectionStringFor<TKey>>();
+        private static readonly ILog Log = LogProvider.GetLogger(typeof(LookupConnectionStringFor<TKey>).CSharpName());
 
         public LookupConnectionStringFor(ConnectionStringProvider provider)
         {
@@ -166,7 +166,7 @@ namespace MediatR.Extras
     class LookupAppSettingsFor<TKey> : IRequestHandler<Configured<TKey>, string>
     {
         private readonly AppSettingsProvider provider;
-        private static readonly ILog Log = LogProvider.For<LookupAppSettingsFor<TKey>>();
+        private static readonly ILog Log = LogProvider.GetLogger(typeof (LookupAppSettingsFor<TKey>).CSharpName());
 
         public LookupAppSettingsFor(AppSettingsProvider provider)
         {
@@ -201,7 +201,8 @@ namespace MediatR.Extras
     class LookupAppSettingsFor<TKey, TValue> : IRequestHandler<Configured<TKey, TValue>, TValue>
     {
         private readonly AppSettingsProvider provider;
-        private static readonly ILog Log = LogProvider.For<LookupAppSettingsFor<TKey, TValue>>();
+
+        private static readonly ILog Log = LogProvider.GetLogger(typeof (LookupAppSettingsFor<TKey, TValue>).CSharpName());
 
         public LookupAppSettingsFor(AppSettingsProvider provider)
         {

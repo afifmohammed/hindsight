@@ -9,7 +9,9 @@ namespace MediatR.Extras
 
         public ListOfHandlers(IEnumerable<INotificationHandler<TNotification>> handlers)
         {
-            this.handlers = handlers;
+            this.handlers = handlers.Select(x => x is ExceptionLoggingHandler<TNotification> 
+                ? x 
+                : new ExceptionLoggingHandler<TNotification>(x));
         }
 
         public void Handle(TNotification notification)

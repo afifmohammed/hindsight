@@ -57,6 +57,7 @@
     <Compile Include="AssemblyMarker.cs" />
     <Compile Include="Benchmarking.cs" />
     <Compile Include="EnqueuingHandlers.cs" />
+    <Compile Include="ExceptionHandlers.cs" />
     <Compile Include="ScopedHandlers.cs" />
     <Compile Include="TestHelpers.cs" />
     <Compile Include="FunctionalHandlers.cs" />
