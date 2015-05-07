@@ -36,12 +36,19 @@ namespace MediatR.Hangfire
         }
     }
 
-    class PaymentSaga : SagaOf<PaymentSagaState>, INotificationHandler<PaymentSubmitted>, INotificationHandler<StockReserved>
+    class PaymentPendingStock : INotification, ITimeout
+    {
+        public int Order { get; set; }
+        public TimeSpan Interval { get { return TimeSpan.FromDays(3); } }
+    }
+
+    class PaymentSaga : SagaOf<PaymentSagaState>, INotificationHandler<PaymentSubmitted>, INotificationHandler<StockReserved>, INotificationHandler<PaymentPendingStock>
     {
         protected override void ConfigureMessageMapping()
         {
             MapMessage<PaymentSubmitted>(x => x.Order, s => e => s.PaymentSubmitted = true);
             MapMessage<StockReserved>(x => x.Order, s => e => s.StockReserved = true);
+            MapMessage<PaymentPendingStock>(x => x.Order, s => e => { });
         }
 
         public void Handle(PaymentSubmitted notification)
@@ -59,5 +66,8 @@ namespace MediatR.Hangfire
             Publish(new PaymentApproved { Order = Saga.Id });
             Saga.MarkedAsComplete = true;
         }
+
+        public void Handle(PaymentPendingStock notification)
+        {}
     }
 }

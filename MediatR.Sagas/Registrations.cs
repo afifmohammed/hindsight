@@ -29,6 +29,12 @@ namespace MediatR.Sagas
                     .InstancePerLifetimeScope()
                     .AsImplementedInterfaces()
                     .PropertiesAutowired();
+
+                if (typeof (ITimeout).IsAssignableFrom(notificationType))
+                    container.RegisterType(typeof (TimeoutHandler<>).MakeGenericType(notificationType))
+                        .InstancePerLifetimeScope()
+                        .AsImplementedInterfaces()
+                        .PropertiesAutowired();
             }
 
             return container;

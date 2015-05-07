@@ -60,11 +60,16 @@
   <ItemGroup>
     <Compile Include="AssemblyMarker.cs" />
     <Compile Include="ConfigurationKeys.cs" />
-    <Compile Include="EnqueuingHandlers.cs" />
-    <Compile Include="Modules.cs" />
+    <Compile Include="Enqueuing\EnqueuingNotificationHandlers.cs" />
+    <Compile Include="Enqueuing\EnqueueingCommandHandlers.cs" />
+    <Compile Include="Enqueuing\SendEnqueueRequests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Registrations.cs" />
-    <Compile Include="SchedulingHandlers.cs" />
+    <Compile Include="Registrations\RegisterEnqueuedCommandHandlers.cs" />
+    <Compile Include="Registrations\RegisterEnqueuedEventHandlers.cs" />
+    <Compile Include="Registrations\RegisterScheduledCommandHandlers.cs" />
+    <Compile Include="Registrations\RegisterEnqueuedSagas.cs" />
+    <Compile Include="Scheduling\SchedulingCommandHandlers.cs" />
+    <Compile Include="Scheduling\SendScheduleRequests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

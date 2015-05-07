@@ -11,34 +11,36 @@ namespace MediatR.Hangfire
 {
     public class InOrderToDeliverTimeouts
     {
-        class ClimateChange : INotification
+        class ClimateChange : ITimeout, INotification
         {
-            public DateTime When { get; set; }
+            public TimeSpan Interval { get { return TimeSpan.FromSeconds(1); } }
         }
 
-        [Fact]
-        public void CanRegisterTimeoutHandlers()
+        private readonly List<Type> enqueudHandlers = new List<Type>();
+        private readonly ILifetimeScope scope;
+
+        public InOrderToDeliverTimeouts()
         {
-            Assert.DoesNotThrow(() => new ContainerBuilder().With(x => x.RegisterModule<TimeoutHandlerModule>()).Build());
+            this.scope = new ContainerBuilder()
+                .RegisterQueryHandler<Configured<EnqueueHandlers, bool>, bool>(c => true)
+                .RegisterScheduledCommandHandler<RequestDelegateWrapper<Timeout<ClimateChange>>, Timeout<ClimateChange>>(
+                    c => new RequestDelegateWrapper<Timeout<ClimateChange>>(r => {}))
+                .RegisterCommandHandler<Schedule<RequestDelegateWrapper<Timeout<ClimateChange>>, Timeout<ClimateChange>, Unit>>(
+                    r => enqueudHandlers.Add(r.Handler))
+                .Build();
         }
 
         [Fact]
         public void ShouldReceiveRequestToScheduleTheHandler()
         {
-            var list = new List<Schedule<ClimateChange>>();
+            scope.Send(new Timeout<ClimateChange>());
+            Assert.True(enqueudHandlers.Count(x => x == typeof(RequestDelegateWrapper<Timeout<ClimateChange>>)) == 1);
+        }
 
-            new ContainerBuilder()
-                .With(x => x.RegisterModule<TimeoutHandlerModule>())
-                .RegisterQueryHandler<Configured<EnqueueHandlers, bool>, bool>(c => true)
-                .RegisterCommandHandler<Schedule<ClimateChange>>(list.Add)
-                .Build()
-                .Send(new Timeout<ClimateChange>
-                {
-                    Notification = new ClimateChange { When = new DateTime(2050,1,1)}
-                });
-
-            Assert.Equal(1, list.Count(x => x.Notification.When == new DateTime(2050,1,1)));
+        [Fact]
+        public void ShouldRegisterTheHandlerAsScoped()
+        {
+            Assert.True(scope.Resolve<Scoped<RequestDelegateWrapper<Timeout<ClimateChange>>, Timeout<ClimateChange>, Unit>>() != null);
         }
     }
-
 }
