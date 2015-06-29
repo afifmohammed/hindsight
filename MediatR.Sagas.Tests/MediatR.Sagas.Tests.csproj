@@ -34,10 +34,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Autofac">
-      <HintPath>..\..\packages\Autofac.3.5.2\lib\net40\Autofac.dll</HintPath>
+      <HintPath>..\packages\Autofac.3.5.2\lib\net40\Autofac.dll</HintPath>
     </Reference>
     <Reference Include="MediatR">
-      <HintPath>..\..\packages\MediatR.2.0.0-beta-002\lib\portable-net45+win+wpa81+wp80+MonoAndroid10+Xamarin.iOS10+MonoTouch10\MediatR.dll</HintPath>
+      <HintPath>..\packages\MediatR.2.0.0-beta-002\lib\portable-net45+win+wpa81+wp80+MonoAndroid10+Xamarin.iOS10+MonoTouch10\MediatR.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -47,7 +47,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="xunit">
-      <HintPath>..\..\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
+      <HintPath>..\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -60,11 +60,11 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\MediatR.Extras\MediatR.Extras.csproj">
+    <ProjectReference Include="..\MediatR.Extras\MediatR.Extras.csproj">
       <Project>{C4D36C1A-2AAB-4431-8813-A61184CF103C}</Project>
       <Name>MediatR.Extras</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\MediatR.Sagas\MediatR.Sagas.csproj">
+    <ProjectReference Include="..\MediatR.Sagas\MediatR.Sagas.csproj">
       <Project>{C04F8F40-700F-4609-82D3-F1FEB160C084}</Project>
       <Name>MediatR.Sagas</Name>
     </ProjectReference>

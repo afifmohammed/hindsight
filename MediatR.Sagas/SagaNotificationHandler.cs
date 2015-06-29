@@ -49,18 +49,26 @@ namespace MediatR.Sagas
 
             var voilation = this.innerHandler.Saga.State.Invariants().FirstOrDefault(invariant => !invariant.Value());
             if (!string.IsNullOrEmpty(voilation.Key))
-                this.innerHandlerLogger.Log(LogLevel.Info, () => "{Handler} with Id {CorrelationId} is pending on {Message}", null,
-                    this.innerHandler.ToString(),
+                this.innerHandlerLogger.Log(LogLevel.Info, () => "{Handler} with Id {CorrelationId} on {Message} is pending {Invariant}", null,
+                    this.innerHandler,
                     this.innerHandler.Saga.Id,
+                    notification.GetType().CSharpName(),
                     voilation.Key);
 
             if (this.innerHandler.Saga.MarkedAsComplete)
-                this.innerHandlerLogger.Log(LogLevel.Info, () => "{Handler} with Id {CorrelationId} is marked as complete",
-                    null,
-                    this.innerHandler.ToString(),
-                    this.innerHandler.Saga.Id);
+                this.innerHandlerLogger.Log(LogLevel.Info, () => "{Handler} with Id {CorrelationId} on {Message} is marked as complete", null,
+                    this.innerHandler,
+                    this.innerHandler.Saga.Id,
+                    notification.GetType().CSharpName());
 
             SendCommand(new Upsert<TSagaState> { Content = this.innerHandler.Saga });
+
+            if (exists)
+                this.innerHandlerLogger.Log(LogLevel.Info, () => "Updated {Handler} with Id {CorrelationId} and Version {RowVersion} when handling {Message}", null,
+                    this.innerHandler.ToString(),
+                    this.innerHandler.Saga.Id,
+                    BitConverter.ToString(this.innerHandler.Saga.CurrentVersion),
+                    notification.GetType().CSharpName());
         }
 
         private static Action<INotificationHandler<TNotification>> ErrorLoggingHandle(TNotification notification)

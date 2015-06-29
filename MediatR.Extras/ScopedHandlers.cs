@@ -1,6 +1,5 @@
 ﻿using System;
 using Autofac;
-using MediatR.Extras.Logging;
 
 namespace MediatR.Extras
 {
@@ -25,15 +24,13 @@ namespace MediatR.Extras
                     ? handler
                     : new ExceptionLoggingHandler<TRequest, TReturn>(handler);
 
-                var logger = LogProvider.GetLogger(handler.ToString());
                 try
                 {
                     var result = handler.Handle(message);
                     return result;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    logger.LogError(message, ex);
                     queue.Clear();
                     throw;
                 }

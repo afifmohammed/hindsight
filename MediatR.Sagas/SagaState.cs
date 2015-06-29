@@ -18,6 +18,7 @@ namespace MediatR.Sagas
         public TSagaState State { get; set; }
         public bool IsPending { get { return State.Invariants().Any(r => !r.Value()); } }
         public DateTime? LastModifiedUtc { get; set; }
+        public byte[] CurrentVersion { get; set; }
     }
 
     public abstract partial class SagaOf<TSagaState> : CanMediate
@@ -31,6 +32,9 @@ namespace MediatR.Sagas
         public static void Upsert<TSaga>(this IDictionary<int, SagaData<TSaga>> dictionary, Upsert<TSaga> command)
             where TSaga : class, ISagaState, new()
         {
+            var b = new byte[20];
+            new Random().NextBytes(b);
+            command.Content.CurrentVersion = b;
             dictionary[command.Content.Id] = command.Content;
         }
 

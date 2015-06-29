@@ -32,7 +32,7 @@ namespace MediatR.Extras
                         var logger = new Lazy<ILog>(() => LogProvider.GetLogger(typeof(MultiInstanceFactory).CSharpName()));
                         var services = ((IEnumerable<object>) context.Resolve(typeof (IEnumerable<>).MakeGenericType(x))).ToList();
                         if (!services.Any())
-                            logger.Value.Log(LogLevel.Warn, () => "0 Services found implementing {Contract}", null, x.CSharpName());
+                            logger.Value.Log(LogLevel.Info, () => "0 Services found implementing {Handler}", null, x.CSharpName());
                         return services;
                     };
 

@@ -30,10 +30,18 @@ namespace MediatR.Extras
                 {
                     using (container)
                     using (var scope = container.BeginLifetimeScope())
-                    using (scope.Resolve<Queue>())
+                    using (var queue = scope.Resolve<Queue>())
                     {
-                        var mediator = scope.Resolve<IMediator>();
-                        return request(mediator)(r);
+                        try
+                        {
+                            var mediator = scope.Resolve<IMediator>();
+                            return request(mediator)(r);
+                        }
+                        catch
+                        {
+                            queue.Clear();
+                            throw;
+                        }
                     }
                 };
 
@@ -46,14 +54,23 @@ namespace MediatR.Extras
 
                 using (container)
                 using (var scope = container.BeginLifetimeScope())
-                using (scope.Resolve<Queue>())
+                using (var queue = scope.Resolve<Queue>())
                 {
-                    var mediator = scope.Resolve<IMediator>();
-
-                    foreach (var action in actions)
+                    try
                     {
-                        action(mediator);
+                        var mediator = scope.Resolve<IMediator>();
+
+                        foreach (var action in actions)
+                        {
+                            action(mediator);
+                        }
                     }
+                    catch
+                    {
+                        queue.Clear();
+                        throw;
+                    }
+                    
                 }
             }
 
@@ -65,10 +82,18 @@ namespace MediatR.Extras
 
                 using (container)
                 using (var scope = container.BeginLifetimeScope())
-                using (scope.Resolve<Queue>())
+                using (var queue = scope.Resolve<Queue>())
                 {
-                    var mediator = scope.Resolve<IMediator>();
-                    mediator.Publish(notification);
+                    try
+                    {
+                        var mediator = scope.Resolve<IMediator>();
+                        mediator.Publish(notification);
+                    }
+                    catch
+                    {
+                        queue.Clear();
+                        throw;
+                    }
                 }
             }
 
@@ -79,12 +104,20 @@ namespace MediatR.Extras
 
                 using (container)
                 using (var scope = container.BeginLifetimeScope())
-                using (scope.Resolve<Queue>())
+                using (var queue = scope.Resolve<Queue>())
                 {
-                    foreach (var command in commands)
+                    try
                     {
-                        var mediator = scope.Resolve<IMediator>();
-                        mediator.Send(command);
+                        foreach (var command in commands)
+                        {
+                            var mediator = scope.Resolve<IMediator>();
+                            mediator.Send(command);
+                        }
+                    }
+                    catch
+                    {
+                        queue.Clear();
+                        throw;
                     }
                 }
 
@@ -98,10 +131,18 @@ namespace MediatR.Extras
 
                 using (container)
                 using (var scope = container.BeginLifetimeScope())
-                using (scope.Resolve<Queue>())
+                using (var queue = scope.Resolve<Queue>())
                 {
-                    var mediator = scope.Resolve<IMediator>();
-                    return mediator.Send(request);
+                    try
+                    {
+                        var mediator = scope.Resolve<IMediator>();
+                        return mediator.Send(request);
+                    }
+                    catch
+                    {
+                        queue.Clear();
+                        throw;
+                    }
                 }
             }
 

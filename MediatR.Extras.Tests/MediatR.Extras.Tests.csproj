@@ -51,6 +51,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EnqueueHandlerTests.cs" />
     <Compile Include="Registration\NotificationHandlerRegoTests.cs" />
     <Compile Include="Registration\QueryHandlerRegoTests.cs" />
     <Compile Include="ConfigurationTests.cs" />

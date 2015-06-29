@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using MediatR.Extras.Logging;
 
 namespace MediatR.Extras
@@ -22,7 +24,7 @@ namespace MediatR.Extras
             }
             catch (Exception ex)
             {
-                this.log.LogError(notification, ex);
+                this.log.LogError(new ExceptionLogging.Event {Exception = ex, Handler = this.handler, Input = notification});
                 throw;
             }
         }
@@ -51,7 +53,7 @@ namespace MediatR.Extras
             }
             catch (Exception ex)
             {
-                this.log.LogError(message, ex);
+                this.log.LogError(new ExceptionLogging.Event {Exception = ex, Handler = this.handler, Input = message});
                 throw;
             }
         }
@@ -62,21 +64,53 @@ namespace MediatR.Extras
         }
     }
 
+    public static class GlobalConfiguration
+    {
+        private static readonly IList<Type> ExceptionWhiteListing = new List<Type>();
+
+        public static void MarkWhiteListed<TException>() where TException : Exception
+        {
+            if(ExceptionWhiteListing.All(t => t != typeof (TException)))
+                ExceptionWhiteListing.Add(typeof(TException));
+        }
+
+        internal static LogLevel LogLevel(Exception exception)
+        {
+            var ignored = ExceptionWhiteListing.Any(t => t.IsInstanceOfType(exception));
+            return ignored ? Logging.LogLevel.Info : Logging.LogLevel.Error;
+        }
+
+        public static bool IsWhiteListed(Exception exception)
+        {
+            return LogLevel(exception) != Logging.LogLevel.Error;
+        }
+    }
+
     static class ExceptionLogging
     {
-        public static void LogError(this ILog log, object input, Exception exception)
+        public struct Event
         {
-            var correlated = input as ICorrelated;
+            public object Input { get; set; }
+            public object Handler { get; set; }
+            public Exception Exception { get; set; }
+        }
+
+        public static void LogError(this ILog log, Event @event)
+        {
+            var correlated = @event.Input as ICorrelated;
+            
             if (correlated != null)
-                log.Log(LogLevel.Error, () => "{Message} with {CorrelationId} for {@Content} failed", exception,
-                    input != null ? input.GetType().CSharpName() : null,
-                    input != null ? ((ICorrelated)input).CorrelationId : null,
-                    input);
+                log.Log(GlobalConfiguration.LogLevel(@event.Exception), () => "{Handler} with Id {CorrelationId} on {Message} for {@Content} failed", @event.Exception,
+                    @event.Handler,
+                    correlated.CorrelationId,
+                    correlated.GetType().CSharpName(),
+                    correlated);
 
             if (correlated == null)
-                log.Log(LogLevel.Error, () => "{Message} for {@Content} failed", exception,
-                    input != null ? input.GetType().CSharpName() : null,
-                    input);
+                log.Log(GlobalConfiguration.LogLevel(@event.Exception), () => "{Handler} on {Message} for {@Content} failed", @event.Exception,
+                    @event.Handler,
+                    @event.Input != null ? @event.Input.GetType().CSharpName() : null,
+                    @event.Input);
         }
     }
 }

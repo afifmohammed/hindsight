@@ -55,10 +55,12 @@
   <ItemGroup>
     <Compile Include="App_Packages\LibLog.4.2\LibLog.cs" />
     <Compile Include="AssemblyMarker.cs" />
+    <Compile Include="Audits.cs" />
     <Compile Include="Benchmarking.cs" />
     <Compile Include="EnqueuingHandlers.cs" />
     <Compile Include="ExceptionHandlers.cs" />
     <Compile Include="ScopedHandlers.cs" />
+    <Compile Include="DynamicConsumers.cs" />
     <Compile Include="TestHelpers.cs" />
     <Compile Include="FunctionalHandlers.cs" />
     <Compile Include="ListOfHandlers.cs" />

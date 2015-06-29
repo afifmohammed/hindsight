@@ -6,6 +6,12 @@ namespace MediatR.Hangfire
 {
     public static partial class Registrations
     {
+        public static ContainerBuilder RegisterEnqueuedAuditor<TNotification>(this ContainerBuilder container) where TNotification : INotification, ICorrelated
+        {
+            container.RegisterEnqueuedEventHandler<AuditNotificationsHandler<TNotification>, TNotification>();
+            return container;
+        }
+
         public static ContainerBuilder RegisterEnqueuedEventHandler<THandler, TNotification>(this ContainerBuilder builder)
             where TNotification : INotification
             where THandler : INotificationHandler<TNotification>

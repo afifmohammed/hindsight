@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace MediatR.Extras
 {
@@ -49,8 +50,11 @@ namespace MediatR.Extras
     {
         public void Dispose()
         {
+            Action action = () => {};
             while (this.Count > 0)
-                this.Dequeue()();
+                action += Dequeue();
+
+            action();
         }
     }
 }
