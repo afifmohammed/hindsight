@@ -1,8 +1,7 @@
 ﻿using System;
 using Autofac;
-using MediatR.Extras;
 
-namespace MediatR.Hangfire
+namespace MediatR.Extras
 {
     public static partial class Registrations
     {
@@ -19,7 +18,7 @@ namespace MediatR.Hangfire
             builder.RegisterType<THandler>()
                 .InstancePerLifetimeScope()
                 .PropertiesAutowired()
-                .Named<THandler>("inner");
+                .Named<THandler>("handler");
 
             builder.RegisterEnqueuedInnerNotificationHandler<THandler, TNotification>();
 
@@ -34,7 +33,7 @@ namespace MediatR.Hangfire
             builder.Register(handlerBuilder)
                 .InstancePerLifetimeScope()
                 .PropertiesAutowired()
-                .Named<THandler>("inner");
+                .Named<THandler>("handler");
 
             builder.RegisterEnqueuedInnerNotificationHandler<THandler, TNotification>();
 
@@ -45,35 +44,16 @@ namespace MediatR.Hangfire
             where TNotification : INotification
             where THandler : INotificationHandler<TNotification>
         {
-            builder.RegisterType<Scoped<THandler, TNotification>>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsSelf();
-
-            builder
-                .Register(c =>
-                {
-                    var handler = c.ResolveNamed<THandler>("inner");
-                    return new SendEnqueueRequestForEventHandler<THandler, TNotification>(handler);
-                })
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .Named<SendEnqueueRequestForEventHandler<THandler, TNotification>>("inner");
-
             builder.Register(c =>
             {
-                var handler = c.ResolveNamed<SendEnqueueRequestForEventHandler<THandler, TNotification>>("inner");
                 var queue = c.Resolve<Queue>();
+                var handler = new SendEnqueueRequestForEventHandler<THandler, TNotification>(c.ResolveNamed<THandler>("handler"));
+                c.InjectProperties(handler);
                 return new EnqueueEventHandler<TNotification>(handler, queue);
             })
             .InstancePerLifetimeScope()
             .PropertiesAutowired()
             .AsImplementedInterfaces();
-
-            builder.RegisterType<EnqueueHangfireJobForEventHandler<THandler, TNotification>>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsImplementedInterfaces();
 
             return builder;
         }

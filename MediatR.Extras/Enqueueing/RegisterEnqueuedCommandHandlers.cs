@@ -1,8 +1,7 @@
 ﻿using System;
 using Autofac;
-using MediatR.Extras;
 
-namespace MediatR.Hangfire
+namespace MediatR.Extras
 {
     public static partial class Registrations
     {
@@ -20,7 +19,7 @@ namespace MediatR.Hangfire
             builder.RegisterType<THandler>()
                 .InstancePerLifetimeScope()
                 .PropertiesAutowired()
-                .Named<THandler>("inner");
+                .Named<THandler>("handler");
 
             builder.RegisterEnqueuedInnerCommandHandler<THandler, TRequest>();
 
@@ -35,7 +34,7 @@ namespace MediatR.Hangfire
             builder.Register(handlerBuilder)
                 .InstancePerLifetimeScope()
                 .PropertiesAutowired()
-                .Named<THandler>("inner");
+                .Named<THandler>("handler");
 
             builder.RegisterEnqueuedInnerCommandHandler<THandler, TRequest>();
 
@@ -53,7 +52,7 @@ namespace MediatR.Hangfire
             })
             .InstancePerLifetimeScope()
             .PropertiesAutowired()
-            .Named<RequestDelegateWrapper<TRequest>>("inner");
+            .Named<RequestDelegateWrapper<TRequest>>("handler");
 
             builder.RegisterEnqueuedInnerCommandHandler<RequestDelegateWrapper<TRequest>, TRequest>();
 
@@ -65,34 +64,13 @@ namespace MediatR.Hangfire
             where THandler : IRequestHandler<TRequest, Unit>
         {
             builder
-                .RegisterType<Scoped<THandler, TRequest, Unit>>()
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsSelf();
-
-            builder
                 .Register(c =>
                 {
-                    var handler = c.ResolveNamed<THandler>("inner");
-                    return new SendEnqueueRequestForCommandHandler<THandler, TRequest>(handler);
-                })
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .Named<SendEnqueueRequestForCommandHandler<THandler, TRequest>>("inner");
-
-            builder
-                .Register(c =>
-                {
-                    var handler = c.ResolveNamed<SendEnqueueRequestForCommandHandler<THandler, TRequest>>("inner");
                     var queue = c.Resolve<Queue>();
+                    var handler = new SendEnqueueRequestForCommandHandler<THandler, TRequest>(c.ResolveNamed<THandler>("handler"));
+                    c.InjectProperties(handler);
                     return new EnqueueRequestHandler<TRequest>(handler, queue);
                 })
-                .InstancePerLifetimeScope()
-                .PropertiesAutowired()
-                .AsImplementedInterfaces();
-
-            builder
-                .RegisterType<EnqueueHangfireJobForCommandHandler<THandler, TRequest>>()
                 .InstancePerLifetimeScope()
                 .PropertiesAutowired()
                 .AsImplementedInterfaces();

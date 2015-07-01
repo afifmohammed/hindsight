@@ -9,57 +9,8 @@ namespace MediatR.Extras
 {
     public class InOrderToNotifyCanResolveSubscribers
     {
-        class BatteryRunningLow : INotification {}
-
-        class WifiProvider { public void Toggle(bool off) { } }
-        class BlueToothProvider { public void Toggle(bool off) { } }
-
-        /// <remarks>
-        /// this is a contrived example. 
-        /// an abstraction over another abstraction is pointless.
-        /// please do not use it as an example on how to design handlers. 
-        /// </remarks>
-        class WifiHandler : INotificationHandler<BatteryRunningLow>
-        {
-            private readonly WifiProvider provider;
-            public WifiHandler() : this(new WifiProvider()) {}
-            public WifiHandler(WifiProvider provider) { this.provider = provider; }
-
-            public void Handle(BatteryRunningLow notification)
-            {
-                this.provider.Toggle(off:true);
-            }
-
-            public override string ToString()
-            {
-                return GetType().CSharpName();
-            }
-        }
-
-        /// <remarks>
-        /// this is a contrived example. 
-        /// an abstraction over another abstraction is pointless.
-        /// please do not use it as an example on how to design handlers. 
-        /// </remarks>
-        class BlueToothHandler : INotificationHandler<BatteryRunningLow>
-        {
-            private readonly BlueToothProvider provider;
-            public BlueToothHandler() : this(new BlueToothProvider()) { }
-            public BlueToothHandler(BlueToothProvider provider) { this.provider = provider; }
-
-            public void Handle(BatteryRunningLow notification)
-            {
-                this.provider.Toggle(off: true);
-            }
-
-            public override string ToString()
-            {
-                return GetType().CSharpName();
-            }
-        }
-
         [Fact]
-        public void WhenRegisteredAsType()
+        public void WhenRegisteredAsHandler()
         {
             ShouldFindSubscribers(builder => builder
                 .RegisterEventHandler<BlueToothHandler, BatteryRunningLow>()
@@ -69,7 +20,7 @@ namespace MediatR.Extras
         }
 
         [Fact]
-        public void WhenRegisteredAsTypeBuilder()
+        public void WhenRegisteredAsHandlerBuilder()
         {
             ShouldFindSubscribers(builder => builder
                 .With(x => x.RegisterType<BlueToothProvider>().AsSelf())
@@ -98,7 +49,7 @@ namespace MediatR.Extras
                     new NotificationsDelegateWrapper<BatteryRunningLow>(e => { }));
         }
 
-        private static void ShouldFindSubscribers(Action<ContainerBuilder> builderSetup, params INotificationHandler<BatteryRunningLow>[] instances)
+        private static void ShouldFindSubscribers(Action<ContainerBuilder> builderSetup, params INotificationHandler<BatteryRunningLow>[] expected)
         {
             var builder = new ContainerBuilder();
             builderSetup(builder);
@@ -108,8 +59,8 @@ namespace MediatR.Extras
                 .Resolve<IEnumerable<INotificationHandler<BatteryRunningLow>>>()
                 .ToList();
 
-            Assert.Equal(instances.Count(), subscribers.Count());
-            Assert.True(subscribers.All(s => instances.Any(i => i.ToString() == s.ToString())));
+            Assert.Equal(expected.Count(), subscribers.Count());
+            Assert.True(subscribers.All(s => expected.Any(i => i.ToString() == s.ToString())));
         }
 
     }

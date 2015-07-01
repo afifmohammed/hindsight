@@ -1,50 +1,42 @@
-﻿using System;
-using Autofac;
+﻿using Autofac;
 using MediatR.Extras.Tests;
 using Xunit;
 
 namespace MediatR.Extras
 {
-    public class InOrderToDequeueEnqueuedHandlersCorrectly
+    public class InOrderToCompleteEnqueueRequests
     {
-        class Beep : INotification { }
-        int alerted;
-        void ModifyState() { alerted = alerted + 1; }
+        readonly ILifetimeScope scope;
 
-        [Fact]
-        public void ShouldStopDequeueingOnException()
+        public InOrderToCompleteEnqueueRequests()
         {
-            var container = new ContainerBuilder()
-                .RegisterEventHandler<EnqueueEventHandler<Beep>, Beep>(c => Handler<Beep>(ModifyState)(c.Resolve<Queue>()))
-                .RegisterEventHandler<EnqueueEventHandler<Beep>, Beep>(c => Handler<Beep>(ModifyState, throws: true)(c.Resolve<Queue>()))
-                .RegisterEventHandler<EnqueueEventHandler<Beep>, Beep>(c => Handler<Beep>(ModifyState, throws: true)(c.Resolve<Queue>()))
+            this.scope = new ContainerBuilder()
+                .RegisterQueryHandler<Configured<EnqueueHandlers, bool>, bool>(c => true)
+                .RegisterEnqueuedEventHandler<ManageBurnOuts, BurntOut>()
+                .RegisterEnqueuedEventHandler<ManagerA, LayingLow>()
+                .RegisterEnqueuedEventHandler<ManagerB, LayingLow>()
+                .RegisterCommandHandler<Enqueue<ManageBurnOuts, BurntOut>>(c =>
+                {
+                    var handler = c.ResolveNamed<ManageBurnOuts>("handler");
+                    return r => handler.Handle(r.Content);
+                })
+                .RegisterCommandHandler<Enqueue<ManagerA, LayingLow>>(c =>
+                {
+                    var handler = c.ResolveNamed<ManagerA>("handler");
+                    return r => handler.Handle(r.Content);
+                })
+                .RegisterCommandHandler<Enqueue<ManagerB, LayingLow>>(c =>
+                {
+                    var handler = c.ResolveNamed<ManagerB>("handler");
+                    return r => handler.Handle(r.Content);
+                })
                 .Build();
-
-            Assert.Throws<InvalidOperationException>(() => container.Notify(new Beep()));
-            Assert.True(alerted < 3);
         }
 
         [Fact]
-        public void ShouldDequeueEveryHandler()
+        public void ShouldInvokeAllEnqueuedHandlers()
         {
-            var container = new ContainerBuilder()
-                .RegisterEventHandler<EnqueueEventHandler<Beep>, Beep>(c => Handler<Beep>(ModifyState)(c.Resolve<Queue>()))
-                .RegisterEventHandler<EnqueueEventHandler<Beep>, Beep>(c => Handler<Beep>(ModifyState)(c.Resolve<Queue>()))
-                .Build();
-
-            Assert.DoesNotThrow(() => container.Notify(new Beep()));
-            Assert.Equal(2, alerted);
-        }
-
-        static Func<Queue, EnqueueEventHandler<T>> Handler<T>(Action action, bool throws = false) where T : INotification
-        {
-            var handler = new NotificationsDelegateWrapper<T>(e =>
-            {
-                action();
-                if (throws)
-                    throw new InvalidOperationException();
-            });
-            return queue => new EnqueueEventHandler<T>(handler, queue);
+            Assert.DoesNotThrow(() => scope.Notify(new BurntOut()));
         }
     }
 }

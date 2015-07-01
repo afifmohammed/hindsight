@@ -7,8 +7,6 @@ namespace MediatR.Extras
 {
     public class InOrderToLookupConfigurationValues
     {
-        struct MyKey { }
-
         [Fact]
         public void CanRegisterConfigurationModule()
         {
@@ -22,7 +20,7 @@ namespace MediatR.Extras
                 new ContainerBuilder()
                     .With(x => x.Register<AppSettingsProvider>(c => k => "value"))
                     .Build()
-                    .Request(new Configured<MyKey, string>()));
+                    .Request(new Configured<MyConfigurationKey, string>()));
         }
 
         [Fact]
@@ -31,7 +29,7 @@ namespace MediatR.Extras
             var value = new ContainerBuilder()
                 .With(x => x.Register<AppSettingsProvider>(c => k => "100"))
                 .Build()
-                .Request(new Configured<MyKey, int>());
+                .Request(new Configured<MyConfigurationKey, int>());
 
             Assert.Equal(100, value);
         }
@@ -42,7 +40,7 @@ namespace MediatR.Extras
             var value = new ContainerBuilder()
                 .With(x => x.Register<AppSettingsProvider>(c => k => "100"))
                 .Build()
-                .Request(new Configured<MyKey, int> {Default = 10});
+                .Request(new Configured<MyConfigurationKey, int> {Default = 10});
 
             Assert.Equal(100, value);
         }
@@ -53,7 +51,7 @@ namespace MediatR.Extras
             var value = new ContainerBuilder()
                 .With(x => x.Register<AppSettingsProvider>(c => k => null))
                 .Build()
-                .Request(new Configured<MyKey, int> {Default = 10});
+                .Request(new Configured<MyConfigurationKey, int> {Default = 10});
 
             Assert.Equal(10, value);
         }
@@ -65,7 +63,7 @@ namespace MediatR.Extras
                 new ContainerBuilder()
                     .With(x => x.Register<AppSettingsProvider>(c => k => null))
                     .Build()
-                    .Request(new Configured<MyKey, int>()));
+                    .Request(new Configured<MyConfigurationKey, int>()));
         }
     }
 }

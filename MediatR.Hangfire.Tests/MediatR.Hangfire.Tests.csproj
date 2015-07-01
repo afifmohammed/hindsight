@@ -40,6 +40,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -50,27 +51,21 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EnqueueingSagaTests.cs" />
-    <Compile Include="EnqueuingHandlerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Saga.cs" />
-    <Compile Include="SchedulingHandlerTests.cs" />
+    <Compile Include="RegistrationTests.cs" />
+    <Compile Include="Types.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediatR.Extras\MediatR.Extras.csproj">
-      <Project>{c4d36c1a-2aab-4431-8813-a61184cf103c}</Project>
+      <Project>{C4D36C1A-2AAB-4431-8813-A61184CF103C}</Project>
       <Name>MediatR.Extras</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediatR.Hangfire\MediatR.Hangfire.csproj">
       <Project>{7572ec7b-e9f9-4711-a0e5-d4fdd30d7124}</Project>
       <Name>MediatR.Hangfire</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MediatR.Sagas\MediatR.Sagas.csproj">
-      <Project>{c04f8f40-700f-4609-82d3-f1feb160c084}</Project>
-      <Name>MediatR.Sagas</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

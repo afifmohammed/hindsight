@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Autofac;
-using MediatR.Extras;
 using MediatR.Extras.Tests;
-using MediatR.Sagas;
 using Xunit;
 
-namespace MediatR.Hangfire
+namespace MediatR.Extras
 {
     public class InOrderToDeliverTimeouts
     {
@@ -35,12 +33,6 @@ namespace MediatR.Hangfire
         {
             scope.Send(new Timeout<ClimateChange>());
             Assert.True(enqueudHandlers.Count(x => x == typeof(RequestDelegateWrapper<Timeout<ClimateChange>>)) == 1);
-        }
-
-        [Fact]
-        public void ShouldRegisterTheHandlerAsScoped()
-        {
-            Assert.True(scope.Resolve<Scoped<RequestDelegateWrapper<Timeout<ClimateChange>>, Timeout<ClimateChange>, Unit>>() != null);
         }
     }
 }

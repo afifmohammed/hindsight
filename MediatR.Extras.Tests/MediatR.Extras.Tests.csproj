@@ -57,7 +57,9 @@
     <Compile Include="ConfigurationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Registration\CommandHandlerRegoTests.cs" />
+    <Compile Include="SchedulingHandlerTests.cs" />
     <Compile Include="ScopedHandlerTests.cs" />
+    <Compile Include="Types.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

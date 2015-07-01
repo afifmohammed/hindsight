@@ -7,38 +7,6 @@ namespace MediatR.Extras
 {
     public class InOrderToSendRequestsCanResolveHandler
     {
-        class OzyGreeting : IRequest { }
-
-        class GreetingProvider
-        {
-            public void Greet(OzyGreeting g)
-            { }
-        }
-
-        /// <remarks>
-        /// this is a contrived example. 
-        /// an abstraction over another abstraction is pointless.
-        /// please do not use it as an example on how to design handlers. 
-        /// </remarks>
-        class GreetingHandler : IRequestHandler<OzyGreeting, Unit>
-        {
-            private readonly GreetingProvider provider;
-
-            public GreetingHandler() : this(new GreetingProvider())
-            {}
-
-            public GreetingHandler(GreetingProvider provider)
-            {
-                this.provider = provider;
-            }
-
-            public Unit Handle(OzyGreeting message)
-            {
-                this.provider.Greet(message);
-                return new Unit();
-            }
-        }
-        
         [Fact]
         public void WhenRegisteredAsADelegate()
         {
@@ -54,13 +22,13 @@ namespace MediatR.Extras
         }
 
         [Fact]
-        public void WhenRegisteredAsType()
+        public void WhenRegisteredAsHandler()
         {
             ShouldFindHandler(builder => builder.RegisterCommandHandler<GreetingHandler, OzyGreeting>());
         }
 
         [Fact]
-        public void WhenRegisteredAsTypeBuilder()
+        public void WhenRegisteredAsHandlerBuilder()
         {
             ShouldFindHandler(builder => builder
                 .With(x => x.RegisterType<GreetingProvider>().AsSelf())
@@ -71,7 +39,7 @@ namespace MediatR.Extras
                 }));
         }
 
-        private static void ShouldFindHandler(Action<ContainerBuilder> builderSetup)
+        static void ShouldFindHandler(Action<ContainerBuilder> builderSetup)
         {
             var builder = new ContainerBuilder();
             builderSetup(builder);            

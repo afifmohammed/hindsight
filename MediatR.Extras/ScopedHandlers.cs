@@ -19,7 +19,7 @@ namespace MediatR.Extras
             using (var requestScope = scope.BeginLifetimeScope())
             using (var queue = requestScope.Resolve<Queue>())
             {
-                IRequestHandler<TRequest, TReturn> handler = requestScope.ResolveNamed<THandler>("inner");
+                IRequestHandler<TRequest, TReturn> handler = requestScope.ResolveNamed<THandler>("handler");
                 handler = handler is ExceptionLoggingHandler<TRequest, TReturn>
                     ? handler
                     : new ExceptionLoggingHandler<TRequest, TReturn>(handler);
@@ -54,7 +54,7 @@ namespace MediatR.Extras
             using (var requestScope = scope.BeginLifetimeScope())
             using (var queue = requestScope.Resolve<Queue>())
             {
-                INotificationHandler<TNotification> handler = requestScope.ResolveNamed<THandler>("inner");
+                INotificationHandler<TNotification> handler = requestScope.ResolveNamed<THandler>("handler");
                 handler = handler is ExceptionLoggingHandler<TNotification>
                     ? handler
                     : new ExceptionLoggingHandler<TNotification>(handler);

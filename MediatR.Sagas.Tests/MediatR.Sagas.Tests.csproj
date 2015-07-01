@@ -51,7 +51,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Saga.cs" />
+    <Compile Include="EnqueueingSagaTests.cs" />
+    <Compile Include="Types.cs" />
     <Compile Include="SagaRegistrationTests.cs" />
     <Compile Include="SagaStateTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

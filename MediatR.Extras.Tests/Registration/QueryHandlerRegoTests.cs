@@ -7,40 +7,6 @@ namespace MediatR.Extras
 {
     public class InOrderToAnswerQueriesCanResolveHandler
     {
-        class Timezone : IRequest<string> { }
-
-        class TimezoneProvider
-        {
-            public string Find(Timezone g)
-            {
-                return "AU";
-            }
-        }
-
-        /// <remarks>
-        /// this is a contrived example. 
-        /// an abstraction over another abstraction is pointless.
-        /// please do not use it as an example on how to design handlers. 
-        /// </remarks>
-        class TimezoneHandler : IRequestHandler<Timezone, string>
-        {
-            private readonly TimezoneProvider provider;
-
-            public TimezoneHandler() : this(new TimezoneProvider())
-            {}
-
-            public TimezoneHandler(TimezoneProvider provider)
-            {
-                this.provider = provider;
-            }
-
-            public string Handle(Timezone message)
-            {
-                var timezone = this.provider.Find(message);
-                return timezone;
-            }
-        }
-        
         [Fact]
         public void WhenRegisteredAsADelegate()
         {
@@ -56,13 +22,13 @@ namespace MediatR.Extras
         }
 
         [Fact]
-        public void WhenRegisteredAsType()
+        public void WhenRegisteredAsHandler()
         {
             ShouldFindHandler(builder => builder.RegisterQueryHandler<TimezoneHandler, Timezone, string>());
         }
 
         [Fact]
-        public void WhenRegisteredAsTypeBuilder()
+        public void WhenRegisteredAsHandlerBuilder()
         {
             ShouldFindHandler(builder => builder.With(x => x.RegisterType<TimezoneProvider>().AsSelf())
                 .RegisterQueryHandler<TimezoneHandler, Timezone, string>(c =>

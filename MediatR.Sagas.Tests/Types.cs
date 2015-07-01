@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MediatR.Extras;
 
 namespace MediatR.Sagas
 {
@@ -8,6 +9,12 @@ namespace MediatR.Sagas
         public string Token { get; set; }
         public int Order { get; set; }
         public decimal Amount { get; set; }
+    }
+
+    class StockPendingReserved : ITimeout, INotification
+    {
+        public int Order { get; set; }
+        public TimeSpan Interval { get; set; }
     }
 
     class StockReserved : INotification
@@ -35,12 +42,13 @@ namespace MediatR.Sagas
         }
     }
 
-    class PaymentSaga : SagaOf<PaymentSagaState>, INotificationHandler<PaymentSubmitted>, INotificationHandler<StockReserved>
+    class PaymentSaga : SagaOf<PaymentSagaState>, INotificationHandler<PaymentSubmitted>, INotificationHandler<StockReserved>, INotificationHandler<StockPendingReserved>
     {
         protected override void ConfigureMessageMapping()
         {
             MapMessage<PaymentSubmitted>(x => x.Order, s => e => s.PaymentSubmitted = true);
             MapMessage<StockReserved>(x => x.Order, s => e => s.StockReserved = true);
+            MapMessage<StockPendingReserved>(x => x.Order, s => e => { });
         }
 
         public void Handle(PaymentSubmitted notification)
@@ -58,5 +66,8 @@ namespace MediatR.Sagas
             Publish(new PaymentApproved { Order = Saga.Id });
             Saga.MarkedAsComplete = true;
         }
+
+        public void Handle(StockPendingReserved notification)
+        {}
     }
 }

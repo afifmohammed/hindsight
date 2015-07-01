@@ -4,37 +4,29 @@ using System.Linq;
 using Autofac;
 using MediatR.Extras;
 using MediatR.Extras.Tests;
-using MediatR.Sagas;
 using Xunit;
 
-namespace MediatR.Hangfire
+namespace MediatR.Sagas
 {
     public class InOrderToEnqueueSagaHandlers
     {
-        private readonly List<Type> enqueudHandlers = new List<Type>();
-        private readonly ILifetimeScope scope;
+        readonly List<Type> enqueudHandlers = new List<Type>();
         
         public InOrderToEnqueueSagaHandlers()
         {
-            this.scope = new ContainerBuilder()
+            new ContainerBuilder()
                 .RegisterQueryHandler<Configured<EnqueueHandlers, bool>, bool>(c => true)
                 .RegisterEnqueuedSaga<PaymentSaga, PaymentSagaState>()
                 .RegisterCommandHandler<Enqueue<SagaNotificationHandler<PaymentSubmitted, PaymentSaga, PaymentSagaState>, PaymentSubmitted>>(
                     r => enqueudHandlers.Add(r.Handler))
-                .Build();
+                .Build()
+                .Notify(new PaymentSubmitted());
         }
 
         [Fact]
         public void ShouldReceiveRequestToEnqueueTheHandler()
         {
-            scope.Notify(new PaymentSubmitted());
             Assert.True(enqueudHandlers.Count(x => x == typeof(SagaNotificationHandler<PaymentSubmitted, PaymentSaga, PaymentSagaState>)) == 1);
-        }
-
-        [Fact]
-        public void ShouldRegisterTheHandlerAsScoped()
-        {
-            Assert.True(scope.Resolve<Scoped<SagaNotificationHandler<PaymentSubmitted, PaymentSaga, PaymentSagaState>, PaymentSubmitted>>() != null);
         }
     }
 }

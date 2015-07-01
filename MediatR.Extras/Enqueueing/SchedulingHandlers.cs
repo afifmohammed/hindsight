@@ -1,10 +1,16 @@
-﻿using System.Threading.Tasks;
-using MediatR.Extras;
-using MediatR.Sagas;
+﻿using System;
 
-namespace MediatR.Hangfire
+namespace MediatR.Extras
 {
-    class SendScheduleRequestForCommandHandler<THandler, TRequest> : CanMediate, 
+    public class Schedule<THandler, TRequest, TReturn> : Request<TRequest, TReturn>
+        where TRequest : IRequest<TReturn>
+        where THandler : IRequestHandler<TRequest, TReturn>
+    {
+        public Type Handler { get { return typeof(THandler); } }
+        public TimeSpan Interval { get; set; }
+    }
+
+    class SendScheduleRequestForCommandHandler<THandler, TRequest> : CanMediate,
         IRequestHandler<TRequest, Unit>
         where TRequest : IRequest<Unit>, ITimeout
         where THandler : IRequestHandler<TRequest, Unit>
