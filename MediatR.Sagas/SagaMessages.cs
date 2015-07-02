@@ -18,7 +18,10 @@ namespace MediatR.Sagas
             });
         }
 
-        public string CorrelationId { get { return Convert.ToString(this.Content); } }
+        public string CorrelationId
+        {
+            get { return Convert.ToString(Content); }
+        }
     }
 
     public class SagaOver<TNotification> : Notification<TNotification>, ICorrelated
@@ -45,7 +48,10 @@ namespace MediatR.Sagas
     public class Upsert<TSagaState> : Command<SagaData<TSagaState>>, ICorrelated
         where TSagaState : class, ISagaState, new()
     {
-        public string CorrelationId { get { return Convert.ToString(Content.Id); } }
+        public string CorrelationId
+        {
+            get { return Convert.ToString(Content.Id); }
+        }
 
         public override string ToString()
         {

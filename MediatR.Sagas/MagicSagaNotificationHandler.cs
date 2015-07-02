@@ -6,9 +6,9 @@ using MediatR.Sagas.Logging;
 
 namespace MediatR.Sagas
 {
-    public sealed class SagaNotificationHandler<TNotification, TSagaHandler, TSagaState> : CanMediate, INotificationHandler<TNotification>
+    public sealed class MagicSagaNotificationHandler<TNotification, TSagaHandler, TSagaState> : CanMediate, INotificationHandler<TNotification>
         where TNotification : INotification
-        where TSagaHandler : SagaOf<TSagaState>, INotificationHandler<TNotification>
+        where TSagaHandler : MagicSagaOf<TSagaState>, INotificationHandler<TNotification>
         where TSagaState : class, ISagaState, new()
     {
         #region Fields and Constructors
@@ -16,7 +16,7 @@ namespace MediatR.Sagas
         private readonly ILog innerHandlerLogger = LogProvider.GetLogger(typeof(TSagaHandler).CSharpName());
         private readonly TSagaHandler sagaHandler;
 
-        public SagaNotificationHandler(TSagaHandler sagaHandler)
+        public MagicSagaNotificationHandler(TSagaHandler sagaHandler)
         {
             this.sagaHandler = sagaHandler;
         }
@@ -34,9 +34,9 @@ namespace MediatR.Sagas
                 Content = sagaId
             });
 
-            var exists = sagaHandler.Saga != null && sagaHandler.Saga.Id > 0;
+            var sagaExists = sagaHandler.Saga != null && sagaHandler.Saga.Id > 0;
 
-            if (!exists)
+            if (!sagaExists)
             {
                 sagaHandler.Saga = new SagaData<TSagaState>
                 {
@@ -44,25 +44,31 @@ namespace MediatR.Sagas
                     State = new TSagaState()
                 };
             }
-            else
-            {
-                if (sagaHandler.Saga.MarkedAsComplete)
-                {
-                    ErrorLoggingHandle(notification)(sagaHandler);
 
+            if (sagaHandler.Saga.MarkedAsComplete)
+            {
+                // if the saga is complete, still call the handler method. the 
+                // handler method on the saga handler should be robust enough
+                // to realise it is complete, and handle this scenario accordingly
+                ErrorLoggingHandle(notification)(sagaHandler);
+
+                // ive removed this, because this message is already published
+                // when the saga is marked as complete by the return of the TryComplete()
+                //Publish(new SagaOver<TNotification> { Content = notification });
+
+                return;
+            }
+
+            sagaHandler.Handle(notification);
+
+            if (sagaHandler.Saga.IsPending == false)
+            {
+                if (sagaHandler.TryComplete())
                     Publish(new SagaOver<TNotification>
                     {
                         Content = notification
                     });
-
-                    return;
-                }
             }
-
-            var mapped = sagaHandler.TryMapMessageContent(notification);
-
-            if ((mapped && sagaHandler.Saga.IsPending) == false)
-                ErrorLoggingHandle(notification)(sagaHandler);
 
             var violation = sagaHandler.Saga.State.Invariants()
                 .FirstOrDefault(invariant => !invariant.Value());
@@ -78,7 +84,7 @@ namespace MediatR.Sagas
                 Content = sagaHandler.Saga
             });
 
-            if (exists)
+            if (sagaExists)
                 LogSagaUpdate();
         }
 

@@ -55,11 +55,14 @@
   <ItemGroup>
     <Compile Include="App_Packages\LibLog.4.2\LibLog.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="HetrogenousContainer.cs" />
+    <Compile Include="MagicSagaNotificationHandler.cs" />
+    <Compile Include="MagicSagaOf.cs" />
     <Compile Include="Registrations.cs" />
     <Compile Include="SagaMessages.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SagaNotificationHandler.cs" />
-    <Compile Include="SagaMessageMapping.cs" />
+    <Compile Include="SagaOf.cs" />
     <Compile Include="SagaState.cs" />
     <Compile Include="SagaTimeouts.cs" />
   </ItemGroup>

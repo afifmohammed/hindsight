@@ -43,6 +43,41 @@ namespace MediatR.Sagas
             return container;
         }
 
+        public static ContainerBuilder RegisterMagicSaga<TSagaHandler, TSagaState>(this ContainerBuilder container)
+            where TSagaState : class, ISagaState, new()
+            where TSagaHandler : MagicSagaOf<TSagaState>
+        {
+            container.RegisterType<TSagaHandler>()
+                .AsSelf()
+                .InstancePerLifetimeScope()
+                .PropertiesAutowired();
+
+            var contracts = typeof(TSagaHandler).GetInterfaces()
+                    .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(INotificationHandler<>));
+
+            foreach (var contract in contracts)
+            {
+                var notificationType = contract.GetGenericArguments().First();
+                var sagaNotificationHandlerType = typeof(MagicSagaNotificationHandler<,,>).MakeGenericType(
+                                            notificationType,
+                                            typeof(TSagaHandler),
+                                            typeof(TSagaState));
+
+                container.RegisterType(sagaNotificationHandlerType)
+                    .InstancePerLifetimeScope()
+                    .AsImplementedInterfaces()
+                    .PropertiesAutowired();
+
+                if (typeof(ITimeout).IsAssignableFrom(notificationType))
+                    container.RegisterType(typeof(TimeoutHandler<>).MakeGenericType(notificationType))
+                        .InstancePerLifetimeScope()
+                        .AsImplementedInterfaces()
+                        .PropertiesAutowired();
+            }
+
+            return container;
+        }
+
         public static ContainerBuilder RegisterEnqueuedSaga<TSagaHandler, TSagaState>(this ContainerBuilder container)
             where TSagaState : class, ISagaState, new()
             where TSagaHandler : SagaOf<TSagaState>

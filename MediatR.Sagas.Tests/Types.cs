@@ -6,44 +6,94 @@ namespace MediatR.Sagas
 {
     class PaymentSubmitted : INotification
     {
-        public string Token { get; set; }
-        public int Order { get; set; }
-        public decimal Amount { get; set; }
+        #region Public Members
+
+        public String Token { get; set; }
+        public Int32 Order { get; set; }
+        public Decimal Amount { get; set; }
+
+        #endregion
     }
 
     class StockPendingReserved : ITimeout, INotification
     {
-        public int Order { get; set; }
+        #region Interface Implementations
+
         public TimeSpan Interval { get; set; }
+
+        #endregion
+
+        #region Public Members
+
+        public Int32 Order { get; set; }
+
+        #endregion
     }
 
     class StockReserved : INotification
     {
-        public int Order { get; set; }
+        #region Public Members
+
+        public Int32 Order { get; set; }
+
+        #endregion
     }
 
     class PaymentApproved : INotification
     {
-        public int Order { get; set; }
+        #region Public Members
+
+        public Int32 Order { get; set; }
+
+        #endregion
     }
 
     class PaymentSagaState : ISagaState
     {
-        public bool PaymentSubmitted { get; set; }
-        public bool StockReserved { get; set; }
+        #region Interface Implementations
 
-        public IDictionary<string, Func<bool>> Invariants()
+        public IDictionary<String, Func<Boolean>> Invariants()
         {
-            return new Dictionary<string, Func<bool>>
+            return new Dictionary<String, Func<Boolean>>
             {
                 {typeof(PaymentSubmitted).Name, () => PaymentSubmitted},
-                {typeof(StockReserved).Name, () => StockReserved},
+                {typeof(StockReserved).Name, () => StockReserved}
             };
         }
+
+        #endregion
+
+        #region Public Members
+
+        public Boolean PaymentSubmitted { get; set; }
+        public Boolean StockReserved { get; set; }
+
+        #endregion
     }
 
-    class PaymentSaga : SagaOf<PaymentSagaState>, INotificationHandler<PaymentSubmitted>, INotificationHandler<StockReserved>, INotificationHandler<StockPendingReserved>
+    class PaymentSaga : SagaOf<PaymentSagaState>,
+        INotificationHandler<PaymentSubmitted>,
+        INotificationHandler<StockReserved>,
+        INotificationHandler<StockPendingReserved>
     {
+        #region Interface Implementations
+
+        public void Handle(PaymentSubmitted notification)
+        {
+            TryComplete();
+        }
+
+        public void Handle(StockPendingReserved notification) {}
+
+        public void Handle(StockReserved notification)
+        {
+            TryComplete();
+        }
+
+        #endregion
+
+        #region Overrides
+
         protected override void ConfigureMessageMapping()
         {
             MapMessage<PaymentSubmitted>(x => x.Order, s => e => s.PaymentSubmitted = true);
@@ -51,23 +101,58 @@ namespace MediatR.Sagas
             MapMessage<StockPendingReserved>(x => x.Order, s => e => { });
         }
 
+        #endregion
+
+        #region Private Members
+
+        private void TryComplete()
+        {
+            Publish(new PaymentApproved
+            {
+                Order = Saga.Id
+            });
+
+            Saga.MarkedAsComplete = true;
+        }
+
+        #endregion
+    }
+
+    class MagicPaymentSaga : MagicSagaOf<PaymentSagaState>,
+        INotificationHandler<PaymentSubmitted>,
+        INotificationHandler<StockReserved>,
+        INotificationHandler<StockPendingReserved>
+    {
+        protected override void ConfigureMessageMapping()
+        {
+            Register<PaymentSubmitted>(x => x.Order);
+            Register<StockReserved>(x => x.Order);
+            Register<StockPendingReserved>(x => x.Order);
+        }
+        
         public void Handle(PaymentSubmitted notification)
         {
-            TryComplete();
+            Saga.State.PaymentSubmitted = true;
         }
 
         public void Handle(StockReserved notification)
         {
-            TryComplete();
-        }
-
-        private void TryComplete()
-        {
-            Publish(new PaymentApproved { Order = Saga.Id });
-            Saga.MarkedAsComplete = true;
+            Saga.State.StockReserved = true;
         }
 
         public void Handle(StockPendingReserved notification)
-        {}
+        {
+            //no-op
+        }
+
+        public override Boolean TryComplete()
+        {
+            Publish(new PaymentApproved
+            {
+                Order = Saga.Id
+            });
+
+            return (Saga.MarkedAsComplete = true);
+        }
     }
 }
